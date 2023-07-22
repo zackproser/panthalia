@@ -14,7 +14,7 @@ Together this enables a streamlined mobile-first blogging workflow resulting in 
 * ✅ Expose a responsive web / mobile app 
 * ✅ Create new blog posts by providing a title, summary, content and some optional image prompts
 * ✅ Save draft (in-progress) posts to PostgreSQL
-* Provide a form for editing in-progress posts on a mobile phone 
+* ✅ Provide a form for editing in-progress posts on a mobile phone 
 * Use either DALL-E or a Stable Diffusion microservice for image generation, using the posts's image prompts
 * The edit form should allow re-generating or deletion of images
 * The edit form should allow drag and drop of generated images between paragraphs of text

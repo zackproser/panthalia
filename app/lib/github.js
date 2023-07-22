@@ -19,7 +19,6 @@ async function wipeClone() {
   }
 }
 
-
 export async function createPullRequest(title, head, base, body) {
 
   const response = await octokit.rest.pulls.create({
@@ -34,16 +33,24 @@ export async function createPullRequest(title, head, base, body) {
   return response.data.html_url;
 }
 
-export async function cloneRepo() {
+export async function cloneRepoAndCheckoutBranch(branchName) {
 
   console.log(`Cloning portfolio repo...`);
 
   // Blow away any previous clones
   await wipeClone();
 
-  const repo = simpleGit();
+  const git = simpleGit();
 
-  await repo.clone('https://github.com/zackproser/portfolio.git', clonePath);
+  await git.clone('https://github.com/zackproser/portfolio.git', clonePath).then(() => {
+    console.log('Successfully cloned portfolio repo');
+    console.log(`Checking out branch ${branchName}...`);
+    git.raw(['checkout', '-b', branchName]).then(() => {
+      console.log('Successfully checked out branch');
+    }).catch((err) => {
+      console.log(`error during git clone and branch checkout operations: ${err}`);
+    })
+  })
 
   return clonePath;
 }

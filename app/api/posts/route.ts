@@ -5,7 +5,7 @@ import fs from 'fs';
 
 import slugify from 'slugify'
 
-import { createPullRequest, cloneRepo } from "../../lib/github";
+import { createPullRequest, cloneRepoAndCheckoutBranch } from "../../lib/github";
 import { generatePostContent } from "../../utils/posts";
 
 import { Octokit } from "octokit";
@@ -63,8 +63,13 @@ export async function POST(request: Request) {
       RETURNING *;
     `;
 
-    // Clone my portfolio repository from GitHub so we can add the post to 
-    const cloneUrl = await cloneRepo();
+
+    const slugifiedTitle = slugify(title, { remove: /[*+~.()'"!:@?]/g }).toLowerCase();
+
+    const branchName = `panthalia-${slugifiedTitle}-${Date.now()}`
+
+    // Clone my portfolio repository from GitHub so we can add the post to it
+    const cloneUrl = await cloneRepoAndCheckoutBranch(branchName);
 
     console.log(`cloneUrl: ${cloneUrl}`);
 
@@ -73,10 +78,8 @@ export async function POST(request: Request) {
 
     console.log(`postContent: ${postContent}`);
 
-    const slugifiedTitle = slugify(title)
-
     // Write post file
-    const postFilePath = `${cloneUrl}/src/pages/blog/${slugify(title)}.mdx`;
+    const postFilePath = `${cloneUrl}/src/pages/blog/${slugifiedTitle}.mdx`;
 
     console.log(`postFilePath: ${postFilePath}`);
 
@@ -84,10 +87,6 @@ export async function POST(request: Request) {
 
     const owner = "zackproser"
     const repo = "portfolio"
-
-    const branchName = `panthalia-${slugifiedTitle}-${Date.now()}`
-
-    console.log(`branchName: ${branchName}`);
 
     // DEBUG short-circuit
     return NextResponse.json({}, { status: 200 });
