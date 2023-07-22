@@ -9,6 +9,21 @@ The project will also explore and leverage AI services for automatic image gener
 
 Together this enables a streamlined mobile-first blogging workflow resulting in high quality published posts, while allowing me to quickly stub out and start posts whenever and wherever they occur to me.
 
+```mermaid
+graph LR;
+    A[User Accesses Panthalia App] --> B[Create New Post];
+    B --> D{Post Created in Vercel Postgres};
+    B --> C[Branch Created in Portfolio Site];
+    C --> E[Pull Request Opened];
+    D --> F[Edit Post Content];
+    F --> G{Happy with Post?};
+    G --> |No| F;
+    G --> |Yes| H[Finalize and Merge Pull Request];
+    F --> I[Prompt for Image Generation];
+    I --> J[Generate Image via DALL-E or Stable Diffusion];
+    J --> F;
+```
+
 ## Project goals / future features
 
 * ✅ Expose a responsive web / mobile app 
