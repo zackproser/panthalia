@@ -64,14 +64,16 @@ export async function POST(request: Request) {
     `;
 
     // Clone my portfolio repository from GitHub so we can add the post to 
-    const cloneUrl = await cloneRepo("portfolio");
+    const cloneUrl = await cloneRepo();
 
     console.log(`cloneUrl: ${cloneUrl}`);
 
     // Generate post content
-    const postContent = generatePostContent(title, summary, content);
+    const postContent = await generatePostContent(title, summary, content);
 
     console.log(`postContent: ${postContent}`);
+
+    const slugifiedTitle = slugify(title)
 
     // Write post file
     const postFilePath = `${cloneUrl}/src/pages/blog/${slugify(title)}.mdx`;
@@ -83,9 +85,12 @@ export async function POST(request: Request) {
     const owner = "zackproser"
     const repo = "portfolio"
 
-    const branchName = `panthalia-${title}-${Date.now()}`
+    const branchName = `panthalia-${slugifiedTitle}-${Date.now()}`
 
     console.log(`branchName: ${branchName}`);
+
+    // DEBUG short-circuit
+    return NextResponse.json({}, { status: 200 });
 
     // Get latest commit 
     const latestCommit = await octokit.rest.repos.getCommit({ owner, repo, ref: 'main' })

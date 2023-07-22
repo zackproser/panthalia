@@ -2,7 +2,7 @@
 
 import { serialize } from 'next-mdx-remote/serialize'
 
-export function generatePostContent(title, summary, content, imagePrompts) {
+export async function generatePostContent(title, summary, content, imagePrompts) {
 
   const mdx = `
   # ${title} 
@@ -11,7 +11,6 @@ export function generatePostContent(title, summary, content, imagePrompts) {
   
   ${content}
   
-  ${imagePrompts.map(prompt => `![${prompt}]()`).join('\n\n')}
   `
 
   // Use next-mdx-remote to compile MDX string to JSX
