@@ -1,4 +1,4 @@
-# Panthalia 👁️‍🗨️ 🎨 🖋️
+# Panthalia 🌎👁️‍🗨️ 🎨 🖋️
 
 > Panthalia (/panˈTHālēə/) combines the Greek roots pan- ("all"), thalia ("Muse of comedy and idyllic poetry"). The intended meaning is "flourishing or creating everywhere." 
 
