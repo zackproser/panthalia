@@ -11,6 +11,7 @@ export function NewPostForm() {
   const [content, setContent] = useState('');
   const [leaderImagePrompt, setLeaderImagePrompt] = useState('');
   const [imagePrompts, setImagePrompts] = useState(['']);
+  const [pullRequestURL, setPullRequestURL] = useState('Not Yet Created');
 
   const addImagePrompt = () => {
     setImagePrompts([...imagePrompts, '']);
@@ -53,70 +54,77 @@ export function NewPostForm() {
     } else {
       // Show error message
     }
+
+    if (response.pullRequestURL) {
+      setPullRequestURL(response.pullRequestURL);
+    }
   };
 
   return (
-    <form onSubmit={submitForm} className="space-y-8">
-      <div className="flex flex-col space-y-2">
-        <label className="font-semibold text-lg">Title:</label>
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="p-2 border rounded"
-        />
-      </div>
-      <div className="flex flex-col space-y-2">
-        <label className="font-semibold text-lg">Summary:</label>
-        <textarea
-          value={summary}
-          onChange={(e) => setSummary(e.target.value)}
-          className="p-2 border rounded h-20"
-        />
-      </div>
-      <div className="flex flex-col space-y-2">
-        <label className="font-semibold text-lg">Content:</label>
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          className="p-2 border rounded h-40"
-        />
-      </div>
-      <div className="flex flex-col space-y-2">
-        <label className="font-semibold text-lg">Leader Image Prompt:</label>
-        <input
-          type="text"
-          value={leaderImagePrompt}
-          onChange={(e) => setLeaderImagePrompt(e.target.value)}
-          className="p-2 border rounded"
-        />
-      </div>
-      {imagePrompts.map((prompt, index) => (
-        <div key={index} className="flex flex-col space-y-2">
-          <label className="font-semibold text-lg">Image Prompt {index + 1}:</label>
+    <>
+      <h1>Pull Request: {pullRequestURL}</h1>
+      <form onSubmit={submitForm} className="space-y-8">
+        <div className="flex flex-col space-y-2">
+          <label className="font-semibold text-lg">Title:</label>
           <input
             type="text"
-            value={prompt}
-            onChange={(e) => updateImagePrompt(index, e.target.value)}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
             className="p-2 border rounded"
           />
         </div>
-      ))}
-      <div className="flex justify-center space-x-4">
-        <button
-          type="button"
-          onClick={addImagePrompt}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Add Image Prompt
-        </button>
-        <input
-          type="submit"
-          value="Create Post"
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-        />
-      </div>
-    </form>
+        <div className="flex flex-col space-y-2">
+          <label className="font-semibold text-lg">Summary:</label>
+          <textarea
+            value={summary}
+            onChange={(e) => setSummary(e.target.value)}
+            className="p-2 border rounded h-20"
+          />
+        </div>
+        <div className="flex flex-col space-y-2">
+          <label className="font-semibold text-lg">Content:</label>
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            className="p-2 border rounded h-40"
+          />
+        </div>
+        <div className="flex flex-col space-y-2">
+          <label className="font-semibold text-lg">Leader Image Prompt:</label>
+          <input
+            type="text"
+            value={leaderImagePrompt}
+            onChange={(e) => setLeaderImagePrompt(e.target.value)}
+            className="p-2 border rounded"
+          />
+        </div>
+        {imagePrompts.map((prompt, index) => (
+          <div key={index} className="flex flex-col space-y-2">
+            <label className="font-semibold text-lg">Image Prompt {index + 1}:</label>
+            <input
+              type="text"
+              value={prompt}
+              onChange={(e) => updateImagePrompt(index, e.target.value)}
+              className="p-2 border rounded"
+            />
+          </div>
+        ))}
+        <div className="flex justify-center space-x-4">
+          <button
+            type="button"
+            onClick={addImagePrompt}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Add Image Prompt
+          </button>
+          <input
+            type="submit"
+            value="Create Post"
+            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+          />
+        </div>
+      </form>
+    </>
   );
 }
 

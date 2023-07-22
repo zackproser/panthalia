@@ -95,7 +95,20 @@ export async function POST(request: Request) {
     // Add new blog post and make an initial commit
     commitAndPushPost(postFilePath, branchName, title);
 
-    return NextResponse.json({}, { status: 200 });
+    // Try sleeping to see if GitHub can find the new branch
+    // Bummer, this works :(
+    // TODO: add a check via GitHub API to see if the branch exists, and if it does not, 
+    // only then sleep 
+    await new Promise(resolve => setTimeout(resolve, 7000));
+
+    const prTitle = `Add blog post: ${title}`;
+    const baseBranch = 'main'
+    const body = `
+      This pull request was programmatically opened by Panthalia (github.com/zackproser/panthalia)
+    `
+    const pullRequestURL = createPullRequest(prTitle, branchName, baseBranch, body);
+
+    return NextResponse.json({ pullRequestURL }, { status: 200 });
 
   } catch (error) {
 
