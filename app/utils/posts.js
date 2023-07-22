@@ -1,22 +1,29 @@
 // utils/posts.js
 
-import { serialize } from 'next-mdx-remote/serialize'
-
 export async function generatePostContent(title, summary, content, imagePrompts) {
 
+  // The following template sets up the basic configuration for all my blog posts
+
   const mdx = `
-  # ${title} 
-  
-  ${summary}
-  
-  ${content}
-  
-  `
 
-  // Use next-mdx-remote to compile MDX string to JSX
-  const jsx = serialize(mdx)
+import { ArticleLayout } from '@/components/ArticleLayout'
+import { Newsletter } from '@/components/Newsletter'
 
-  // Return compiled JSX as string
-  return jsx.toString()
+import Image from 'next/image'
+import Link from 'next/link'
+
+export const meta = {
+  author: "Zachary Proser",
+  date: "${new Date().toLocaleDateString()}",
+  title: "${title}",
+  description: "${summary}", 
+ }
+
+export default (props) => <ArticleLayout meta={meta} {...props} />
+  
+ ${content}
+  
+`
+  return mdx
 }
 
