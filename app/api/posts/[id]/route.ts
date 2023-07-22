@@ -3,8 +3,6 @@ import { NextResponse } from 'next/server';
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
 
-  console.dir(params)
-
   const id = params.id
 
   try {
@@ -16,6 +14,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
         FROM posts
         WHERE id = ${id}
       `;
+
+      console.log(`fetched post from DB: %o`, result.rows[0]);
 
       return new Response(JSON.stringify(result.rows[0]), {
         status: 200
@@ -77,6 +77,44 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ error }, { status: 500 });
 
+  }
+}
+
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
+
+  const id = params.id
+
+  const body = await request.json();
+
+  // Destructure body into the individual fields
+  const {
+    title,
+    summary,
+    content,
+    leaderImagePrompt,
+    imagePrompts
+  } = body;
+
+  try {
+    const result = await sql`
+      UPDATE posts 
+      SET 
+        title = ${title},
+        summary = ${summary},
+        content = ${content},
+        leaderImagePrompt = ${leaderImagePrompt},
+        imagePrompts = ${imagePrompts}
+      WHERE id = ${id}
+      RETURNING *
+    `;
+
+    console.log(`result: %o`, result);
+
+    return NextResponse.json({ post: result.rows[0] }, { status: 200 });
+
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error }, { status: 500 });
   }
 }
 
