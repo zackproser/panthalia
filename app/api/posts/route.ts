@@ -65,6 +65,9 @@ export async function POST(request: Request) {
       RETURNING *;
     `;
 
+    // Save the postId so we can use it to update the record with the pull request URL once it's available
+    const postId = result.rows[0].id
+
     const slugifiedTitle = slugify(title, { remove: /[*+~.()'"!:@?]/g }).toLowerCase();
 
     const branchName = `panthalia-${slugifiedTitle}-${Date.now()}`
@@ -106,7 +109,16 @@ export async function POST(request: Request) {
     const body = `
       This pull request was programmatically opened by Panthalia (github.com/zackproser/panthalia)
     `
-    const pullRequestURL = createPullRequest(prTitle, branchName, baseBranch, body);
+    const pullRequestURL = await createPullRequest(prTitle, branchName, baseBranch, body);
+
+    // Associate the pull request URL with the post 
+    const addPrResult = await sql`
+      UPDATE posts
+      SET githubpr = ${pullRequestURL}
+      WHERE id = ${postId}
+    `
+
+    console.log(`Result of updating post with githuburl: %o`, addPrResult);
 
     return NextResponse.json({ pullRequestURL }, { status: 200 });
 

@@ -37,7 +37,6 @@ export async function createPullRequest(title, head, base, body) {
   })
 
   console.log(`Pull request URL: %s`, response.data.html_url);
-
   return response.data.html_url;
 }
 

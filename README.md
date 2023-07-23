@@ -77,3 +77,20 @@ Copy the .env.example file to .env and supply your PostgreSQL credentials and ot
 
 Open http://localhost:3000 to view the app.
 
+## Database operations 
+
+### Drop an old posts table 
+
+Hit `localhost:3000/api/drop-posts-table`
+
+### Create the posts table 
+
+Hit `localhost:3000/api/create-posts-table`
+
+### Optionally, seed the posts table
+
+The `create-posts-table` route accepts an optional query string parameter `seed_db`. 
+
+If you hit `localhost:3000/api/create-posts-table?seed_db=true`, the posts table will be seeded with dummy data (some initial posts).
+
+
