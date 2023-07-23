@@ -72,6 +72,14 @@ export async function POST(request: Request) {
 
     const branchName = `panthalia-${slugifiedTitle}-${Date.now()}`
 
+    // Update the post record with the generated branch name
+    const addBranchResult = await sql`
+      UPDATE posts
+      SET gitbranch = ${branchName}
+      WHERE id = ${postId}
+    `
+    console.log(`Result of updating post with gitbranch: %o`, addBranchResult);
+
     // Clone my portfolio repository from GitHub so we can add the post to it
     const cloneUrl = await cloneRepoAndCheckoutBranch(branchName);
 
