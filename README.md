@@ -34,7 +34,7 @@ graph LR;
 * ✅ Create new blog posts by providing a title, summary, content and some optional image prompts
 * ✅ Save draft (in-progress) posts to PostgreSQL
 * ✅ Provide a form for editing in-progress posts on a mobile phone 
-* After creating a new post and pull request, the pull request URL and the branch should be saved to the post's record
+* ✅ After creating a new post and pull request, the pull request URL and the branch should be saved to the post's record
 
 ### AI integration 
 
