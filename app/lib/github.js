@@ -25,11 +25,6 @@ export async function createPullRequest(title, head, base, body) {
 
   console.log(`createPullRequest running...`)
 
-  console.log(`title: ${title}`)
-  console.log(`head: ${head}`)
-  console.log(`base: ${base}`)
-  console.log(`body: ${body}`)
-
   const response = await octokit.rest.pulls.create({
     owner: "zackproser",
     repo: "portfolio",
@@ -41,7 +36,7 @@ export async function createPullRequest(title, head, base, body) {
     console.log(`error during createPullRequest operation: ${err}`);
   })
 
-  console.log(`Pull request response: %o`, response);
+  console.log(`Pull request URL: %s`, response.data.html_url);
 
   return response.data.html_url;
 }

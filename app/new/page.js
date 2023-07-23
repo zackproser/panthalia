@@ -1,17 +1,24 @@
 'use client'
 
-import Image from 'next/image'
 import styles from '../page.module.css'
+
+import Image from 'next/image'
+import panthaliaLogo from '/public/panthalia-logo-2.png'
+
+import Spinner from '../utils/spinner'
 
 import { useState } from 'react';
 
 export function NewPostForm() {
+
+  const [submitting, setSubmitting] = useState(false);
+
   const [title, setTitle] = useState('');
   const [summary, setSummary] = useState('');
   const [content, setContent] = useState('');
   const [leaderImagePrompt, setLeaderImagePrompt] = useState('');
   const [imagePrompts, setImagePrompts] = useState(['']);
-  const [pullRequestURL, setPullRequestURL] = useState('Not Yet Created');
+  const [pullRequestURL, setPullRequestURL] = useState('');
 
   const addImagePrompt = () => {
     setImagePrompts([...imagePrompts, '']);
@@ -25,6 +32,8 @@ export function NewPostForm() {
 
   const submitForm = async (e) => {
     e.preventDefault();
+
+    setSubmitting(true);
 
     // Call API to create new post
     const response = await fetch('/api/posts', {
@@ -40,6 +49,8 @@ export function NewPostForm() {
         imagePrompts
       })
     });
+
+    setSubmitting(false);
 
     // Handle response
     if (response.ok) {
@@ -62,7 +73,13 @@ export function NewPostForm() {
 
   return (
     <>
-      <h1>Pull Request: {pullRequestURL}</h1>
+      {pullRequestURL ? (
+        <Link href={pullRequestURL}>
+          <a>View Pull Request</a>
+        </Link>
+      ) : (
+        <p>Pull request not yet created</p>
+      )}
       <form onSubmit={submitForm} className="space-y-8">
         <div className="flex flex-col space-y-2">
           <label className="font-semibold text-lg">Title:</label>
@@ -117,11 +134,20 @@ export function NewPostForm() {
           >
             Add Image Prompt
           </button>
-          <input
+          <button
+            disabled={submitting}
             type="submit"
-            value="Create Post"
             className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-          />
+          >
+            {submitting ? (
+              <>
+                <span>Spreading the seeds...</span>
+                <Spinner />
+              </>
+            ) : (
+              'Create Post'
+            )}
+          </button>
         </div>
       </form>
     </>
@@ -133,6 +159,7 @@ export default function Home() {
   return (
     <main className={styles.main}>
       <div className={styles.description}>
+        <Image src={panthaliaLogo} />
         <NewPostForm />
       </div>
     </main>
