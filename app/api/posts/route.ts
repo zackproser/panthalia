@@ -14,6 +14,15 @@ import {
 
 import { generatePostContent } from "../../utils/posts";
 
+interface Post {
+  id?: number;
+  title: string;
+  summary: string;
+  content: string;
+  leaderImagePrompt: string;
+  imagePrompts: string[];
+}
+
 export async function GET() {
 
   try {
@@ -32,6 +41,69 @@ export async function GET() {
     console.log(`error: ${error}`);
   }
 }
+
+async function processPost(newPost: Post) {
+  const slugifiedTitle = slugify(newPost.title, { remove: /[*+~.()'"!:@?]/g }).toLowerCase();
+
+  const branchName = `panthalia-${slugifiedTitle}-${Date.now()}`
+
+  // Update the post record with the generated branch name
+  const addBranchResult = await sql`
+      UPDATE posts
+      SET gitbranch = ${branchName}
+      WHERE id = ${newPost.id}
+    `
+  console.log(`Result of updating post with gitbranch: %o`, addBranchResult);
+
+  // Clone my portfolio repository from GitHub so we can add the post to it
+  const cloneUrl = await cloneRepoAndCheckoutBranch(branchName);
+
+  console.log(`cloneUrl: ${cloneUrl}`);
+
+  // Generate post content
+  const postContent = await generatePostContent(newPost.title, newPost.summary, newPost.content);
+
+  console.log(`postContent: ${postContent}`);
+
+  // Write post file
+  const postFilePath = `${cloneUrl}/src/pages/blog/${slugifiedTitle}.mdx`;
+
+  console.log(`postFilePath: ${postFilePath}`);
+
+  fs.writeFileSync(postFilePath, postContent);
+
+  const gitUsername = "Zachary Proser"
+  const gitUserEmail = "zackproser@gmail.com"
+
+  // Configure git so that author and email are set properly
+  configureGit(gitUsername, gitUserEmail);
+
+  // Add new blog post and make an initial commit
+  commitAndPushPost(postFilePath, branchName, newPost.title);
+
+  // Try sleeping to see if GitHub can find the new branch
+  // Bummer, this works :(
+  // TODO: add a check via GitHub API to see if the branch exists, and if it does not, 
+  // only then sleep 
+  await new Promise(resolve => setTimeout(resolve, 7000));
+
+  const prTitle = `Add blog post: ${newPost.title}`;
+  const baseBranch = 'main'
+  const body = `
+      This pull request was programmatically opened by Panthalia (github.com/zackproser/panthalia)
+    `
+  const pullRequestURL = await createPullRequest(prTitle, branchName, baseBranch, body);
+
+  // Associate the pull request URL with the post 
+  const addPrResult = await sql`
+      UPDATE posts
+      SET githubpr = ${pullRequestURL}
+      WHERE id = ${newPost.id}
+    `
+
+  console.log(`Result of updating post with githuburl: %o`, addPrResult);
+}
+
 
 export async function POST(request: Request) {
   try {
@@ -66,69 +138,19 @@ export async function POST(request: Request) {
     `;
 
     // Save the postId so we can use it to update the record with the pull request URL once it's available
-    const postId = result.rows[0].id
+    const newPost: Post = {
+      id: result.rows[0].id,
+      title,
+      summary,
+      content,
+      leaderImagePrompt,
+      imagePrompts,
+    }
 
-    const slugifiedTitle = slugify(title, { remove: /[*+~.()'"!:@?]/g }).toLowerCase();
+    // Fire and forget the post processing routine, while returning a response to the posts form quickly
+    processPost(newPost)
 
-    const branchName = `panthalia-${slugifiedTitle}-${Date.now()}`
-
-    // Update the post record with the generated branch name
-    const addBranchResult = await sql`
-      UPDATE posts
-      SET gitbranch = ${branchName}
-      WHERE id = ${postId}
-    `
-    console.log(`Result of updating post with gitbranch: %o`, addBranchResult);
-
-    // Clone my portfolio repository from GitHub so we can add the post to it
-    const cloneUrl = await cloneRepoAndCheckoutBranch(branchName);
-
-    console.log(`cloneUrl: ${cloneUrl}`);
-
-    // Generate post content
-    const postContent = await generatePostContent(title, summary, content);
-
-    console.log(`postContent: ${postContent}`);
-
-    // Write post file
-    const postFilePath = `${cloneUrl}/src/pages/blog/${slugifiedTitle}.mdx`;
-
-    console.log(`postFilePath: ${postFilePath}`);
-
-    fs.writeFileSync(postFilePath, postContent);
-
-    const gitUsername = "Zachary Proser"
-    const gitUserEmail = "zackproser@gmail.com"
-
-    // Configure git so that author and email are set properly
-    configureGit(gitUsername, gitUserEmail);
-
-    // Add new blog post and make an initial commit
-    commitAndPushPost(postFilePath, branchName, title);
-
-    // Try sleeping to see if GitHub can find the new branch
-    // Bummer, this works :(
-    // TODO: add a check via GitHub API to see if the branch exists, and if it does not, 
-    // only then sleep 
-    await new Promise(resolve => setTimeout(resolve, 7000));
-
-    const prTitle = `Add blog post: ${title}`;
-    const baseBranch = 'main'
-    const body = `
-      This pull request was programmatically opened by Panthalia (github.com/zackproser/panthalia)
-    `
-    const pullRequestURL = await createPullRequest(prTitle, branchName, baseBranch, body);
-
-    // Associate the pull request URL with the post 
-    const addPrResult = await sql`
-      UPDATE posts
-      SET githubpr = ${pullRequestURL}
-      WHERE id = ${postId}
-    `
-
-    console.log(`Result of updating post with githuburl: %o`, addPrResult);
-
-    return NextResponse.json({ pullRequestURL }, { status: 200 });
+    return NextResponse.json({ result, success: true }, { status: 200 });
 
   } catch (error) {
 

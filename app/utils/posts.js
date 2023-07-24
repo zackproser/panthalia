@@ -1,4 +1,13 @@
-// utils/posts.js
+export async function fetchPosts() {
+  const response = await fetch('/api/posts');
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message);
+  }
+
+  return data.posts;
+}
 
 export async function generatePostContent(title, summary, content, imagePrompts) {
 

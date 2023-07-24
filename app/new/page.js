@@ -9,7 +9,12 @@ import Spinner from '../utils/spinner'
 
 import { useState } from 'react';
 
+import { useRouter } from 'next/navigation';
+
+
 export function NewPostForm() {
+
+  const router = useRouter();
 
   const [submitting, setSubmitting] = useState(false);
 
@@ -18,7 +23,6 @@ export function NewPostForm() {
   const [content, setContent] = useState('');
   const [leaderImagePrompt, setLeaderImagePrompt] = useState('');
   const [imagePrompts, setImagePrompts] = useState(['']);
-  const [pullRequestURL, setPullRequestURL] = useState('');
 
   const addImagePrompt = () => {
     setImagePrompts([...imagePrompts, '']);
@@ -50,10 +54,14 @@ export function NewPostForm() {
       })
     });
 
+    const data = await response.json();
+
+    console.log(`Response: %o`, data);
+
     setSubmitting(false);
 
     // Handle response
-    if (response.ok) {
+    if (data.success) {
       // Clear form
       setTitle('');
       setSummary('');
@@ -61,25 +69,16 @@ export function NewPostForm() {
       setLeaderImagePrompt('');
       setImagePrompts(['']);
 
-      // Show success message
-    } else {
-      // Show error message
-    }
+      router.push(`/posts/`)
 
-    if (response.pullRequestURL) {
-      setPullRequestURL(response.pullRequestURL);
+    } else {
+      //  TODO - implement error state
+      // Show error message
     }
   };
 
   return (
     <>
-      {pullRequestURL ? (
-        <Link href={pullRequestURL}>
-          <a>View Pull Request</a>
-        </Link>
-      ) : (
-        <p>Pull request not yet created</p>
-      )}
       <form onSubmit={submitForm} className="space-y-8">
         <div className="flex flex-col space-y-2">
           <label className="font-semibold text-lg">Title:</label>
@@ -159,7 +158,7 @@ export default function Home() {
   return (
     <main className={styles.main}>
       <div className={styles.description}>
-        <Image src={panthaliaLogo} />
+        <Image src={panthaliaLogo} alt="Panthalia" />
         <NewPostForm />
       </div>
     </main>
