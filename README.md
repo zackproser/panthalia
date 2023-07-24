@@ -5,9 +5,13 @@
 > Panthalia (/panˈTHālēə/) combines the Greek roots pan- ("all"), thalia ("Muse of comedy and idyllic poetry"). The intended meaning is "flourishing or creating everywhere." 
 
 ## Overview
-The goal of this project is to enable quickly authoring and iterating on blog posts on the go from my phone. This results in pull requests on GitHub, which generate Vercel deployment previews to review on mobile. When back at a computer, posts can be polished up and published on a live blog.
+The goal of this project is to enable quickly authoring and iterating on blog posts on the go from my phone. 
 
-The project will also explore and leverage AI services for automatic image generation based on prompts.
+This results in pull requests on GitHub, which generate Vercel deployment previews to review on mobile. 
+
+Once back at my laptop, posts can be polished and their pull requests merged to publish them live on my blog. 
+
+The project will also explore and leverage AI services for automatic image generation based on prompts, and possibly use an LLM to review and ensure the content is stylistically inline with my usual blog content. 
 
 Together this enables a streamlined mobile-first blogging workflow resulting in high quality published posts, while allowing me to quickly stub out and start posts whenever and wherever they occur to me.
 
