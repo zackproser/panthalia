@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { fetchPosts } from './utils/posts';
 
 import Image from 'next/image'
+import Link from 'next/link'
 
 export default function PostsPage() {
 
@@ -31,14 +32,21 @@ export default function PostsPage() {
         {posts.map(post => (
           <div key={post.id} className="bg-white rounded-lg shadow overflow-hidden">
 
-            {/* Show PR icon if post has a PR URL */}
-            {post.githubpr &&
-              <div>
-                <h1>{post.githubr}</h1>
-                <Image src={"/github-pr.svg"} width={24} height={24} />
-              </div>
+            <div className="flex items-center p-6">
 
-            }
+              <Image src={post.leaderimageurl} width={250} height={250} className="" />
+
+              {/* Show PR icon if post has a PR URL */}
+              {post.githubpr &&
+                <div>
+                  <h1>{post.githubr}</h1>
+                  <Link href={post.githubpr}>
+                    <Image src={"/github-pr.svg"} width={24} height={24} />
+                  </Link>
+                </div>
+              }
+
+            </div>
 
             <div className="px-4 py-2">
               <h3 className="text-lg font-bold truncate">{post.title}</h3>
@@ -57,7 +65,7 @@ export default function PostsPage() {
           </div>
         ))}
       </div>
-    </div>
+    </div >
   );
 }
 

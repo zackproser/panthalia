@@ -21,6 +21,7 @@ interface Post {
   content: string;
   gitbranch: string;
   githubpr: string;
+  leaderimageurl: string;
   leaderImagePrompt: string;
   imagePrompts: string[];
 }
@@ -148,6 +149,7 @@ export async function POST(request: Request) {
       // gitbranch and githubpr will be set within processPost 
       gitbranch: null,
       githubpr: null,
+      leaderimageurl: null,
       leaderImagePrompt,
       imagePrompts,
     }
