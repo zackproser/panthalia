@@ -15,7 +15,11 @@ export async function POST(request: Request) {
     console.log(`newPost data submitted /api/git: %o`, newPost)
 
     // Intentionally fire and forget the post processing routine
-    processPost(newPost)
+    await processPost(newPost).then(() => {
+      console.log('post processing complete')
+    }).catch((error) => {
+      console.log(`post processing error: ${error}`)
+    })
 
     return NextResponse.json({ success: true }, { status: 200 });
 
