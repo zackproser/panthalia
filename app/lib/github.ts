@@ -26,6 +26,25 @@ const clonePath = '/tmp/repo';
 
 import Post from '../types/posts'
 
+export async function startGitProcessing(post: Post) {
+
+  console.log(`startGitProcessing: %o`, post);
+
+  const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+
+  try {
+    fetch(`${baseUrl}/api/git`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify(post),
+    });
+  } catch (error) {
+    console.log(`error: ${error}`);
+  }
+}
+
 export async function processPost(newPost: Post) {
 
   console.log(`newPost data submitted to processPost function: %o`, newPost)
