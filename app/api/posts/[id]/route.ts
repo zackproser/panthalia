@@ -114,8 +114,33 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     return NextResponse.json({ post: result.rows[0] }, { status: 200 });
 
   } catch (error) {
+
+    console.error(error);
+
+    return NextResponse.json({ error }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+
+  const id = params.id
+
+  console.log(`id: ${id}`);
+
+  try {
+    const result = await sql`
+      DELETE FROM posts
+      WHERE id = ${id}
+      RETURNING *
+    `;
+
+    console.log(`result: %o`, result);
+
+    return NextResponse.json({ post: result.rows[0] }, { status: 200 });
+  } catch (error) {
     console.error(error);
     return NextResponse.json({ error }, { status: 500 });
   }
+
 }
 

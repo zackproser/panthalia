@@ -12,7 +12,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 
-export function NewPostForm() {
+function NewPostForm() {
 
   const router = useRouter();
 

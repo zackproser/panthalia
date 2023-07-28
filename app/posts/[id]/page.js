@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 
-export function EditPost({ post }) {
+function EditPost({ post }) {
 
   console.log(`EditPost component...:%o`, post)
 
