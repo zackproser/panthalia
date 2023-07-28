@@ -101,6 +101,8 @@ export async function processPost(newPost: Post) {
     `
 
   console.log(`Result of updating post with githuburl: %o`, addPrResult);
+
+  return
 }
 
 async function wipeClone() {
