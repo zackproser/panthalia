@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@octokit/plugin-rest-endpoint-methods": "^9.0.0",
     "@vercel/postgres": "^0.4.0",
     "autoprefixer": "^10.4.14",
     "eslint": "8.45.0",
