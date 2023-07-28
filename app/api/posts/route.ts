@@ -14,17 +14,7 @@ import {
 
 import { generatePostContent } from "../../utils/posts";
 
-interface Post {
-  id?: number;
-  title: string;
-  summary: string;
-  content: string;
-  gitbranch: string;
-  githubpr: string;
-  leaderimageurl: string;
-  leaderImagePrompt: string;
-  imagePrompts: string[];
-}
+import Post from "../../types/posts";
 
 export async function GET() {
 
@@ -45,7 +35,7 @@ export async function GET() {
   }
 }
 
-async function processPost(newPost: Post) {
+export async function processPost(newPost: Post) {
   const slugifiedTitle = slugify(newPost.title, { remove: /[*+~.()'"!:@?]/g }).toLowerCase();
 
   const branchName = `panthalia-${slugifiedTitle}-${Date.now()}`
@@ -107,6 +97,24 @@ async function processPost(newPost: Post) {
   console.log(`Result of updating post with githuburl: %o`, addPrResult);
 }
 
+export async function startGitProcessing(post: Post) {
+
+  console.log(`startGitProcessing: %o`, post);
+
+  const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+
+  try {
+    fetch(`${baseUrl}/api/git`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify(post),
+    });
+  } catch (error) {
+    console.log(`error: ${error}`);
+  }
+}
 
 export async function POST(request: Request) {
   try {
@@ -115,28 +123,28 @@ export async function POST(request: Request) {
 
     const formData = await request.json()
 
-    console.log(`formData submitted: %o`, formData)
+    console.log(`formData submitted: % o`, formData)
 
     const { title, summary, content, leaderImagePrompt, imagePrompts } = formData
 
     // Query to insert new blog post into the database
     const result = await sql`
-      INSERT INTO posts (
-        title,
-        summary,
-        content,
-        leaderimageprompt,
-        imageprompts,
-        status
-      )
-      VALUES (
-        ${title},
-        ${summary},
-        ${content},
-        ${leaderImagePrompt},
-        ${JSON.stringify(imagePrompts)},
-        'drafting'
-      )
+      INSERT INTO posts(
+      title,
+      summary,
+      content,
+      leaderimageprompt,
+      imageprompts,
+      status
+    )
+      VALUES(
+      ${title},
+      ${summary},
+      ${content},
+      ${leaderImagePrompt},
+      ${JSON.stringify(imagePrompts)},
+      'drafting'
+    )
       RETURNING *;
     `;
 
@@ -155,13 +163,13 @@ export async function POST(request: Request) {
     }
 
     // Fire and forget the post processing routine, while returning a response to the posts form quickly
-    processPost(newPost)
+    startGitProcessing(newPost)
 
     return NextResponse.json({ result, success: true }, { status: 200 });
 
   } catch (error) {
 
-    console.log(`error: ${error}`);
+    console.log(`error: ${error} `);
 
     return NextResponse.json({ error }, { status: 500 });
 

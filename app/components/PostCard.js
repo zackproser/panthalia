@@ -18,7 +18,9 @@ export default function PostCard({ post, deletePost }) {
         <div className="flex items-center p-6">
           {/* Render post image */}
           <Image
-            src={post.leaderimageurl}
+            src={
+              post.leaderimageurl ?? 'https://picsum.photos/200/300'
+            }
             width={150}
             height={150}
           />
@@ -55,7 +57,7 @@ export default function PostCard({ post, deletePost }) {
         </div>
 
 
-        <div class="flex items-center rounded-md shadow-sm px-4 py-4">
+        <div className="flex items-center rounded-md shadow-sm px-4 py-4">
           <div>
             <Link
               href={`/posts/${post.id}`}

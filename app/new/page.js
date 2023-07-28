@@ -69,7 +69,7 @@ function NewPostForm() {
       setLeaderImagePrompt('');
       setImagePrompts(['']);
 
-      router.push(`/posts/`)
+      router.push(`/`)
 
     } else {
       //  TODO - implement error state
