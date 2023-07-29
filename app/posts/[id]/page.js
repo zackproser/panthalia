@@ -161,17 +161,15 @@ export default function EditPostPage({ params }) {
 
   return (
     <main className={styles.main}>
-      <div className={styles.description}>
-        <div className="w-full flex flex-wrap items-center justify-center">
-          <Image
-            src={panthaliaLogo}
-            alt="Panthalia"
-            width={350}
-            height={350}
-            className="mb-12"
-          />
-          <EditPost post={post} />
-        </div>
+      <div className="w-full flex flex-wrap items-center justify-center">
+        <Image
+          src={panthaliaLogo}
+          alt="Panthalia"
+          width={350}
+          height={350}
+          className="mb-12"
+        />
+        <EditPost post={post} />
       </div>
     </main>
   );
