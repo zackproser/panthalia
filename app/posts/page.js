@@ -78,7 +78,7 @@ function NewPostForm() {
   };
 
   return (
-    <form onSubmit={submitForm} className="w-full mb-4">
+    <form onSubmit={submitForm} className="new-post-form w-full mb-4">
       <div className="w-full mb-4">
         <label className="font-semibold text-lg">Title:</label>
         <input
