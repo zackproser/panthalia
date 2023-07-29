@@ -231,7 +231,7 @@
   }
 }
 
-.new-post-form {
+.new-post-form, .edit-post-form {
   background: 
     linear-gradient(-45deg, #d5e1a1, #e1e7cd);
   background-size: 400% 400%;
