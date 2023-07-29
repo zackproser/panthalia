@@ -7,11 +7,18 @@ import Link from 'next/link'
 import panthaliaLogo from '/public/panthalia-logo-2.png'
 
 import Spinner from '../utils/spinner'
-
 import { useState } from 'react';
-
 import { useRouter } from 'next/navigation';
 
+
+import "@uiw/react-md-editor/markdown-editor.css";
+import "@uiw/react-markdown-preview/markdown.css";
+import dynamic from "next/dynamic";
+
+const MDEditor = dynamic(
+  () => import("@uiw/react-md-editor"),
+  { ssr: false }
+);
 
 function NewPostForm() {
 
@@ -100,11 +107,7 @@ function NewPostForm() {
         </div>
         <div className="flex flex-col space-y-2">
           <label className="font-semibold text-lg">Content:</label>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="p-2 border rounded h-40"
-          />
+          <MDEditor value={content} onChange={setContent} />
         </div>
         <div className="flex flex-col space-y-2">
           <label className="font-semibold text-lg">Leader Image Prompt:</label>
