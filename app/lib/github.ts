@@ -1,34 +1,58 @@
-import { Octokit } from "octokit";
+import path from 'path';
+import fs from 'fs';
 
+import { sql } from '@vercel/postgres';
+import { Octokit } from "octokit";
 import { RestEndpointMethodTypes } from "@octokit/plugin-rest-endpoint-methods";
+
+import Post from '../types/posts'
+import { generatePostContent } from '../utils/posts';
+import {
+  slugifyTitle,
+  cloneRepoAndCheckoutBranch,
+  commitAndPush
+} from './git';
 
 type GetResponseType = RestEndpointMethodTypes["pulls"]["create"]["response"];
 
-import { sql } from '@vercel/postgres';
-
-const slugify = require('slugify');
-
-const git = require('isomorphic-git');
-const http = require('isomorphic-git/http/node');
-
-const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN
-});
-
-import path from 'path';
-
-import fs from 'fs';
-
-import { rmdir } from 'fs/promises';
-
-import { generatePostContent } from '../utils/posts';
-
+// By default - clone the portfolio repo to the temp directory, which is also available
+// to Vercel functions
 const clonePath = '/tmp/repo';
+// Octokit is the GitHub API client (used for opening pull requests)
+const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
-import Post from '../types/posts'
+const maxRetries = 5;
+
+export async function waitForBranch(owner: string, repo: string, branch: string) {
+  console.log(`waitForBranch: waiting for branch: ${branch} on ${owner}/${repo}`);
+  for (let i = 1; i <= maxRetries; i++) {
+    console.log(`waitForBranch on try number ${i}...`);
+    try {
+      // Attempt to get branch
+      await octokit.rest.repos.getBranch({
+        owner,
+        repo,
+        branch
+      }).then(() => {
+        // Branch found
+        console.log(`Branch found via GitHub API: ${branch}`);
+      })
+      // Success
+      return;
+    } catch (error) {
+      // Branch not found yet
+      // Exponential backoff
+      const waitTime = i * 1000;
+      console.log(`waitForBranch sleeping for ${waitTime} milliseconds...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+  }
+
+  throw new Error('Timeout waiting for branch')
+}
+
 
 export async function startGitProcessing(post: Post) {
-
   console.log(`startGitProcessing: %o`, post);
 
   const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
@@ -46,45 +70,93 @@ export async function startGitProcessing(post: Post) {
   }
 }
 
+export async function startGitPostUpdates(post: Post) {
+  console.log(`startGitPostUpdates: %o`, post);
+
+  const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+
+  try {
+    fetch(`${baseUrl}/api/git`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'PUT',
+      body: JSON.stringify(post),
+    });
+  } catch (error) {
+    console.log(`error: ${error}`);
+  }
+}
+
+export async function updatePostWithOpenPR(updatedPost: Post) {
+  console.log(`updatedPost data submitted to updatePostWithOpenPR function: %o`, updatedPost)
+
+  // Ensure the post has an associated branchName 
+  if (updatedPost.gitbranch === '') {
+    console.log('updatedPost missing git branch information - cannot update existing PR')
+    return
+  }
+
+  // Clone the repo and checkout the same branch associated with the open PR
+  // We'll always need to re-clone the repo each time due to the nature of the ephemeral 
+  // serverless environment the "backend" / Vercel functions are running in 
+  const cloneUrl = await cloneRepoAndCheckoutBranch(clonePath, updatedPost.gitbranch);
+
+  console.log(`cloneUrl: ${cloneUrl}`);
+
+  // Generate post content
+  const postContent = await generatePostContent(updatedPost.title, updatedPost.summary, updatedPost.content);
+
+  console.log(`postContent: ${postContent}`);
+
+  // Write updated post file 
+  const postFilePath = `src/pages/blog/${updatedPost.slug}.mdx`;
+
+  console.log(`postFilePath: ${postFilePath}`);
+
+  // Update post file in repo with new content
+  fs.writeFileSync(path.join(cloneUrl, postFilePath), postContent)
+
+  // Commit the update and push it on the existing branch 
+  const update = true
+  await commitAndPush(cloneUrl, postFilePath, updatedPost.gitbranch, updatedPost.title, update);
+}
+
 export async function processPost(newPost: Post) {
 
   console.log(`newPost data submitted to processPost function: %o`, newPost)
 
-  const slugifiedTitle = slugify(newPost.title, { remove: /[*+~.()'"!:@?]/g }).toLowerCase();
-
+  const slugifiedTitle = slugifyTitle(newPost.title);
   const branchName = `panthalia-${slugifiedTitle}-${Date.now()}`
 
-  // Update the post record with the generated branch name
+  // Update the post record with the generated branch name and the slug
   const addBranchResult = await sql`
       UPDATE posts
-      SET gitbranch = ${branchName}
+      SET 
+        gitbranch = ${branchName},
+        slug = ${slugifiedTitle}
       WHERE id = ${newPost.id}
     `
   console.log(`Result of updating post with gitbranch: %o`, addBranchResult);
 
   // Clone my portfolio repository from GitHub so we can add the post to it
-  const cloneUrl = await cloneRepoAndCheckoutBranch(branchName);
-
+  const cloneUrl = await cloneRepoAndCheckoutBranch(clonePath, branchName);
   console.log(`cloneUrl: ${cloneUrl}`);
 
   // Generate post content
   const postContent = await generatePostContent(newPost.title, newPost.summary, newPost.content);
-
   console.log(`postContent: ${postContent}`);
 
   // Write post file
   const postFilePath = `src/pages/blog/${slugifiedTitle}.mdx`;
-
   console.log(`postFilePath: ${postFilePath}`);
 
+  // Write the post content to the expected path to add it as a blog post in my portfolio project
   fs.writeFileSync(path.join(cloneUrl, postFilePath), postContent)
 
   // Add new blog post and make an initial commit
-  commitAndPush(cloneUrl, postFilePath, branchName, newPost.title);
-
-  // Wait for GitHub to finish processing the pushed branch so it doesn't result in a 404 the 
-  // next time we try to look it up while opening a pull request
-  await new Promise(resolve => setTimeout(resolve, 7000));
+  const update = false
+  await commitAndPush(cloneUrl, postFilePath, branchName, newPost.title, update);
 
   const prTitle = `Add blog post: ${newPost.title}`;
   const baseBranch = 'main'
@@ -105,12 +177,6 @@ export async function processPost(newPost: Post) {
   return
 }
 
-async function wipeClone() {
-  if (fs.existsSync(clonePath)) {
-    console.log('Removing existing clone directory...');
-    await rmdir(clonePath, { recursive: true });
-  }
-}
 
 export async function createPullRequest(title: string, head: string, base: string, body: string) {
 
@@ -134,74 +200,10 @@ export async function createPullRequest(title: string, head: string, base: strin
 
     console.log(`createPullRequest error: %o`, error);
   }
-
 }
 
-export async function cloneRepoAndCheckoutBranch(branchName: string) {
 
-  console.log(`Cloning portfolio repo...`);
 
-  // Blow away any previous clones
-  await wipeClone();
 
-  await git.clone({
-    fs,
-    http,
-    dir: clonePath,
-    url: 'https://github.com/zackproser/portfolio.git'
-  }).then(() => {
-    console.log('Repo successfully cloned.')
-  }).catch((err: Error) => {
-    console.log(`error during git clone operations: ${err}`);
-  })
-
-  // Create a new branch
-  await git.branch({
-    fs,
-    dir: clonePath,
-    ref: branchName,
-    checkout: true,
-  }).then(() => {
-    console.log(`Successfully created new branch: ${branchName}`);
-    return clonePath
-  }).catch((err: Error) => {
-    console.log(`error creating new branch: ${err}`);
-    return ''
-  })
-
-  return clonePath
-}
-
-export async function commitAndPush(dirPath: string, filepath: string, branchName: string, title: string) {
-
-  console.log(`commitAndPush: dirPath: ${dirPath} filepath: ${filepath}`);
-
-  // Add a file to the staging area
-  await git.add({ fs, dir: dirPath, filepath });
-
-  // Commit the changes
-  await git.commit({
-    fs,
-    dir: dirPath,
-    author: {
-      name: 'Zachary Proser',
-      email: 'zackproser@gmail.com'
-    },
-    message: `Add post ${title}`
-  }).then(() => {
-
-    console.log
-  })
-
-  // Push the commit
-  await git.push({
-    fs,
-    http,
-    dir: dirPath,
-    remote: 'origin',
-    ref: branchName,
-    onAuth: () => ({ username: 'git', password: process.env.GITHUB_TOKEN }),
-  });
-}
 
 
