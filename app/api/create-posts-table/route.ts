@@ -13,6 +13,7 @@ export async function GET(request: Request) {
       CREATE TABLE posts (
           id SERIAL PRIMARY KEY, 
           title TEXT, 
+          slug TEXT,
           summary TEXT, 
           content TEXT, 
           status VARCHAR(50) CHECK (status IN ('drafting', 'review', 'published')), 
@@ -39,6 +40,7 @@ export async function GET(request: Request) {
             const seedDbResult = await sql`
         INSERT INTO posts (
             title, 
+            slug,
             summary, 
             content, 
             status, 
@@ -51,6 +53,7 @@ export async function GET(request: Request) {
         VALUES 
         (
             'AI in the Modern World', 
+            'ai-in-the-modern-world',
             'A deep dive into the impacts of AI in our daily lives.', 
             'Content for the blog post goes here...', 
             'drafting', 
@@ -62,6 +65,7 @@ export async function GET(request: Request) {
         ), 
         (
             'Introduction to Quantum Computing', 
+            'introduction-to-quantum-computing',
             'A beginner-friendly introduction to the concepts of quantum computing.', 
             'Content for the blog post goes here...', 
             'review', 
@@ -73,6 +77,7 @@ export async function GET(request: Request) {
         ), 
         (
             'Understanding Machine Learning', 
+            'understanding-machine-learning',
             'Breaking down the basics of Machine Learning and its applications.', 
             'Content for the blog post goes here...', 
             'published', 
@@ -83,7 +88,6 @@ export async function GET(request: Request) {
             '["image prompt 7", "image prompt 8", "image prompt 9"]'
         );
       `
-
             console.log(`Result of seedPostsTableStatement: % o`, seedDbResult)
         }
 

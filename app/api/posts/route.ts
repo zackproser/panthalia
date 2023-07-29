@@ -1,8 +1,6 @@
 import { sql } from '@vercel/postgres';
 import { NextResponse } from 'next/server';
-
 import { startGitProcessing } from '../../lib/github'
-
 import Post from "../../types/posts";
 
 export async function GET() {
@@ -20,7 +18,7 @@ export async function GET() {
     });
   } catch (error) {
 
-    console.log(`error: ${error}`);
+    console.log(`error getting all posts from database: ${error}`);
   }
 }
 
@@ -31,15 +29,15 @@ export async function POST(request: Request) {
     console.log('posts POST route hit...')
 
     const formData = await request.json()
-
     console.log(`formData submitted: % o`, formData)
 
-    const { title, summary, content, leaderImagePrompt, imagePrompts } = formData
+    const { title, slug, summary, content, leaderImagePrompt, imagePrompts } = formData
 
     // Query to insert new blog post into the database
     const result = await sql`
       INSERT INTO posts(
       title,
+      slug,
       summary,
       content,
       leaderimageprompt,
@@ -48,6 +46,7 @@ export async function POST(request: Request) {
     )
       VALUES(
       ${title},
+      ${slug},
       ${summary},
       ${content},
       ${leaderImagePrompt},
@@ -61,6 +60,7 @@ export async function POST(request: Request) {
     const newPost: Post = {
       id: result.rows[0].id,
       title,
+      slug,
       summary,
       content,
       // gitbranch and githubpr will be set within processPost 

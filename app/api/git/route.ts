@@ -2,7 +2,10 @@ import { NextResponse } from 'next/server';
 
 import Post from '../../types/posts';
 
-import { processPost } from '../../lib/github'
+import {
+  processPost,
+  updatePostWithOpenPR
+} from '../../lib/github'
 
 export async function POST(request: Request) {
 
@@ -26,8 +29,31 @@ export async function POST(request: Request) {
   } catch (error) {
 
     console.log(`error: ${error}`);
-
     return NextResponse.json({ error }, { status: 500 });
 
+  }
+}
+
+export async function PUT(request: Request) {
+
+  try {
+
+    console.log('git PUT route hit...')
+
+    const updatedPost: Post = await request.json()
+
+    console.log(`updatedPost data submitted /api/git: %o`, updatedPost)
+
+    // Intentionally fire and forget the post updating routine
+    await updatePostWithOpenPR(updatedPost).then(() => {
+      console.log('post updating complete')
+    }).catch((error) => {
+      console.log(`post updating error: ${error}`)
+    })
+
+  } catch (error) {
+
+    console.log(`error: ${error}`);
+    return NextResponse.json({ error }, { status: 500 });
   }
 }
