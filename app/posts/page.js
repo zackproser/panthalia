@@ -172,17 +172,15 @@ function NewPostForm() {
 export default function Home() {
   return (
     <main className={styles.main}>
-      <div className={styles.description}>
-        <div className="w-full flex flex-wrap items-center justify-center">
-          <Image
-            src={panthaliaLogo}
-            alt="Panthalia"
-            width={350}
-            height={350}
-            className="mb-12"
-          />
-          <NewPostForm />
-        </div>
+      <div className="flex flex-wrap items-center justify-center">
+        <Image
+          src={panthaliaLogo}
+          alt="Panthalia"
+          width={350}
+          height={350}
+          className="mb-12"
+        />
+        <NewPostForm />
       </div>
     </main>
   )
