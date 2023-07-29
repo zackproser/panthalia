@@ -3,6 +3,7 @@
 import styles from '../page.module.css'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import panthaliaLogo from '/public/panthalia-logo-2.png'
 
 import Spinner from '../utils/spinner'
@@ -79,14 +80,14 @@ function NewPostForm() {
 
   return (
     <>
-      <form onSubmit={submitForm} className="space-y-8">
-        <div className="flex flex-col space-y-2">
+      <form onSubmit={submitForm} className="new-post-form w-full mb-4">
+        <div className="w-full mb-4">
           <label className="font-semibold text-lg">Title:</label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="p-2 border rounded"
+            className="w-full border-rounded p-2 border"
           />
         </div>
         <div className="flex flex-col space-y-2">
@@ -125,7 +126,20 @@ function NewPostForm() {
             />
           </div>
         ))}
-        <div className="flex justify-center space-x-4">
+        <div className="flex justify-center space-x-4 mt-12 mb-4">
+
+
+          <Link
+            href={"/"}
+          >
+            <button
+              type="button"
+              className="px-4 py-2 bg-blue-300 text-white rounded hover:bg-blue-600"
+            >
+              Posts
+            </button>
+          </Link>
+
           <button
             type="button"
             onClick={addImagePrompt}
@@ -133,6 +147,7 @@ function NewPostForm() {
           >
             Add Image Prompt
           </button>
+
           <button
             disabled={submitting}
             type="submit"
@@ -148,7 +163,7 @@ function NewPostForm() {
             )}
           </button>
         </div>
-      </form>
+      </form >
     </>
   );
 }
@@ -157,8 +172,14 @@ function NewPostForm() {
 export default function Home() {
   return (
     <main className={styles.main}>
-      <div className={styles.description}>
-        <Image src={panthaliaLogo} alt="Panthalia" />
+      <div className="flex flex-wrap items-center justify-center">
+        <Image
+          src={panthaliaLogo}
+          alt="Panthalia"
+          width={350}
+          height={350}
+          className="mb-12"
+        />
         <NewPostForm />
       </div>
     </main>

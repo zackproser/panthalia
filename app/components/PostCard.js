@@ -11,7 +11,7 @@ export default function PostCard({ post, deletePost }) {
     <>
       <div className="bg-white rounded-lg shadow overflow-hidden">
 
-        <div className="px-4 py-2">
+        <div className="px-2 py-2">
           <h3 className="text-lg font-bold truncate">{post.title}</h3>
         </div>
 
@@ -21,8 +21,8 @@ export default function PostCard({ post, deletePost }) {
             src={
               post.leaderimageurl ?? 'https://picsum.photos/200/300'
             }
-            width={150}
-            height={150}
+            width={75}
+            height={75}
           />
         </div>
 
