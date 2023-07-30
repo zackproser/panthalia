@@ -11,7 +11,6 @@ import Spinner from './utils/spinner'
 export default function PostsPage() {
 
   const { data: session } = useSession();
-
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
