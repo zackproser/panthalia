@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
-
 import Replicate from "replicate";
+import { uploadImageToS3 } from '../../lib/s3';
+import slugify from 'slugify'
+import { sql } from '@vercel/postgres'
 
 import Post from '../../types/posts';
 
-import { uploadImageToS3 } from '../../lib/s3';
-
-import slugify from 'slugify'
 
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
@@ -31,13 +30,19 @@ export async function POST(request: Request) {
   console.log(`Got output from calling replicate API: %o`, output)
   const stableDiffusionImageURL = output[0];
 
-  // Note: may need to convert this to fire a new request to the S3 image uploading endpoint
   const s3UploadPath = slugify(newPost.leaderImagePrompt.substring(0, 30))
+  console.log(`slugified s3UploadPath: %o`, s3UploadPath)
 
-  console.log(`s3UploadPath: %o`, s3UploadPath)
+  const uploadedImageS3Path = await uploadImageToS3(stableDiffusionImageURL, s3UploadPath);
 
-  await uploadImageToS3(stableDiffusionImageURL, s3UploadPath);
+  // Save the S3 image to the posts table to associate it with the current Post
+  const result = await sql`
+    INSERT INTO images 
+      (IMAGE_URL, POST_ID) 
+    VALUES (${uploadedImageS3Path as string}, ${newPost.id}) 
+  `
 
+  console.log(`Result of storing new image in posts table: %o`, result)
 
   return NextResponse.json({
     success: true
