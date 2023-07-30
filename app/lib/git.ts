@@ -21,6 +21,8 @@ export async function cloneRepoAndCheckoutBranch(clonePath: string, branchName: 
     fs,
     http,
     dir: clonePath,
+    // Shallow clone to speed things up
+    depth: 1,
     url: 'https://github.com/zackproser/portfolio.git'
   }).then(() => {
     console.log('Repo successfully cloned.')
