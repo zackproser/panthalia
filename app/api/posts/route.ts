@@ -24,9 +24,10 @@ export async function GET(req: NextRequest, res: NextResponse) {
         FROM posts
       `;
 
-    return NextResponse.json(JSON.stringify({ posts: result.rows }), {
+    return NextResponse.json({ posts: result.rows }, {
       status: 200
     });
+
   } catch (error) {
 
     console.log(`error getting all posts from database: ${error}`);
