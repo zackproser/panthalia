@@ -1,6 +1,7 @@
 import { sql } from '@vercel/postgres';
 import { NextResponse } from 'next/server';
 import { startGitProcessing } from '../../lib/github'
+import { startImageGeneration } from '../../lib/image'
 import Post from "../../types/posts";
 
 export async function GET() {
@@ -70,6 +71,9 @@ export async function POST(request: Request) {
       leaderImagePrompt,
       imagePrompts,
     }
+
+    // Fire and forget the stable diffusion image generation routine
+    startImageGeneration(newPost)
 
     // Fire and forget the post processing routine, while returning a response to the posts form quickly
     startGitProcessing(newPost)
