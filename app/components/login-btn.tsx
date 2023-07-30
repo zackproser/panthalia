@@ -15,10 +15,11 @@ export default function Component() {
       </>
     )
   }
+
   return (
     <>
-      <div className="flex items-center justify-center h-screen">
-        <div className="w-full p-3">
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="p-3">
           <Image
             src={panthaliaLogo}
             width={350}
@@ -26,7 +27,7 @@ export default function Component() {
             alt={altTag}
           />
         </div>
-        <div className="w-full p-3">
+        <div className="p-3">
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             onClick={() => signIn()}

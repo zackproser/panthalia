@@ -5,7 +5,16 @@ import { startGitPostUpdates } from '../../../lib/github';
 
 import Post from '../../../types/posts';
 
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "../../auth/[...nextauth]/route"
+
 export async function GET(request: Request, { params }: { params: { id: string } }) {
+
+  // Bounce the request if the user is not authenticated
+  const session = await getServerSession(authOptions)
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
 
   const id = params.id
 
@@ -44,10 +53,15 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
 
+  // Bounce the request if the user is not authenticated
+  const session = await getServerSession(authOptions)
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
   console.log(`Posts PUT route hit...`)
 
   const id = params.id
-
   const body = await request.json();
 
   const updatedPost: Post = {
@@ -55,16 +69,6 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 
   console.log(`Posts PUT updatedPost: %o`, updatedPost);
-
-  // Destructure body into the individual fields
-  /*const {
-    title,
-    summary,
-    content,
-    leaderImagePrompt,
-    imagePrompts
-  } = body;
-  */
 
   try {
     const result = await sql`
@@ -101,6 +105,12 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
 
+  // Bounce the request if the user is not authenticated
+  const session = await getServerSession(authOptions)
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
   const id = params.id
 
   console.log(`id: ${id} `);
@@ -109,14 +119,17 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     const result = await sql`
       DELETE FROM posts
       WHERE id = ${id}
-RETURNING *
-  `;
+      RETURNING *
+    `;
 
     console.log(`result: % o`, result);
 
     return NextResponse.json({ post: result.rows[0] }, { status: 200 });
+
   } catch (error) {
+
     console.error(error);
+
     return NextResponse.json({ error }, { status: 500 });
   }
 

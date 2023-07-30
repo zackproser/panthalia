@@ -26,7 +26,6 @@ function EditPost({ post }) {
 
   console.log(`EditPost component...:%o`, post)
 
-
   const [title, setTitle] = useState(post.title);
   const [summary, setSummary] = useState(post.summary);
   const [content, setContent] = useState(post.content);
