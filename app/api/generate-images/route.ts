@@ -1,17 +1,15 @@
 import { NextResponse } from 'next/server';
-import { sql } from '@vercel/postgres'
-import { types } from 'pg';
-
-import Post from '../../types/posts';
 
 import Replicate from "replicate";
 
+import Post from '../../types/posts';
+
+import { uploadImageToS3 } from '../../lib/s3';
+
+import slugify from 'slugify'
+
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
-});
-
-types.setTypeParser(17, function(val) {
-  return Buffer.from(val, 'hex');
 });
 
 export async function POST(request: Request) {
@@ -33,21 +31,17 @@ export async function POST(request: Request) {
   console.log(`Got output from calling replicate API: %o`, output)
   const stableDiffusionImageURL = output[0];
 
-  // Fetch the image from the URL as a Buffer
-  const response = await fetch(stableDiffusionImageURL);
-  const arrayBuffer = await response.arrayBuffer();
-  const imageBuffer = Buffer.from(arrayBuffer);
+  // Note: may need to convert this to fire a new request to the S3 image uploading endpoint
+  const s3UploadPath = slugify(newPost.leaderImagePrompt.substring(0, 30))
 
-  console.log(`arrayBuffer :%o`, arrayBuffer)
+  console.log(`s3UploadPath: %o`, s3UploadPath)
 
-  const result = await sql`
-    INSERT INTO images 
-       (post_id, image) 
-    VALUES (${newPost.id}, ${imageBuffer.toString('hex')})
-  `
-  console.log(`result of storing image binary data to database: %o`, result)
+  await uploadImageToS3(stableDiffusionImageURL, s3UploadPath);
+
 
   return NextResponse.json({
     success: true
   })
 }
+
+
