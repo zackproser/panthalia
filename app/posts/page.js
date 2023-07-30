@@ -10,6 +10,8 @@ import Spinner from '../utils/spinner'
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { useSession } from 'next-auth/react';
+import LoginButton from '../components/login-btn'
 
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
@@ -21,6 +23,8 @@ const MDEditor = dynamic(
 );
 
 function NewPostForm() {
+
+  const { data: session } = useSession();
 
   const router = useRouter();
 
@@ -84,6 +88,14 @@ function NewPostForm() {
       // Show error message
     }
   };
+
+  if (!session) {
+    return (
+      <>
+        <LoginButton />
+      </>
+    );
+  }
 
   return (
     <>

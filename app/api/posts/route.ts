@@ -1,10 +1,19 @@
 import { sql } from '@vercel/postgres';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { startGitProcessing } from '../../lib/github'
 import { startImageGeneration } from '../../lib/image'
 import Post from "../../types/posts";
 
-export async function GET() {
+import { getServerSession } from "next-auth/next"
+import { authOptions } from '../../lib/auth/options'
+
+export async function GET(req: NextRequest, res: NextResponse) {
+
+  // Bounce the request if the user is not authenticated
+  const session = await getServerSession(authOptions)
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
 
   try {
 
@@ -14,9 +23,10 @@ export async function GET() {
         FROM posts
       `;
 
-    return new Response(JSON.stringify({ posts: result.rows }), {
+    return NextResponse.json({ posts: result.rows }, {
       status: 200
     });
+
   } catch (error) {
 
     console.log(`error getting all posts from database: ${error}`);
@@ -26,6 +36,12 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+
+    const session = await getServerSession(authOptions)
+
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
 
     console.log('posts POST route hit...')
 

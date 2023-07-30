@@ -2,13 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { fetchPosts } from './utils/posts';
+import { useSession } from 'next-auth/react';
+import LoginButton from './components/login-btn'
 
 import PostCard from './components/PostCard';
-
 import Spinner from './utils/spinner'
 
 export default function PostsPage() {
 
+  const { data: session } = useSession();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,6 +28,14 @@ export default function PostsPage() {
     }
     fetchData();
   }, []);
+
+  if (!session) {
+    return (
+      <>
+        <LoginButton />
+      </>
+    );
+  }
 
   return (
     <>
