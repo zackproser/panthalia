@@ -10,6 +10,9 @@ import Image from 'next/image'
 import panthaliaLogo from '/public/panthalia-logo-2.png'
 import Spinner from '../../utils/spinner'
 
+import { useSession } from 'next-auth/react';
+import LoginButton from '../../components/login-btn'
+
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
 import dynamic from "next/dynamic";
@@ -22,6 +25,7 @@ const MDEditor = dynamic(
 function EditPost({ post }) {
 
   console.log(`EditPost component...:%o`, post)
+
 
   const [title, setTitle] = useState(post.title);
   const [summary, setSummary] = useState(post.summary);
@@ -133,12 +137,13 @@ function EditPost({ post }) {
 
 export default function EditPostPage({ params }) {
 
+  const [post, setPost] = useState()
+  const { data: session } = useSession();
+
   const id = params.id
 
   console.log('EditPostPage...')
   console.log(`id: ${id}`)
-
-  const [post, setPost] = useState()
 
   useEffect(() => {
     if (!id) return
@@ -151,6 +156,14 @@ export default function EditPostPage({ params }) {
 
     getPost()
   }, [id])
+
+  if (!session) {
+    return (
+      <>
+        <LoginButton />
+      </>
+    );
+  }
 
   if (!post) return (
     <div>
