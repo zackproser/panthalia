@@ -5,8 +5,7 @@ import { startImageGeneration } from '../../lib/image'
 import Post from "../../types/posts";
 
 import { getServerSession } from "next-auth/next"
-import { authOptions } from "../auth/[...nextauth]/route"
-
+import { authOptions } from '../../lib/auth/options'
 
 export async function GET(req: NextRequest, res: NextResponse) {
 
