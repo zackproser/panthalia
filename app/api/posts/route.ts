@@ -9,6 +9,8 @@ import { authOptions } from '../../lib/auth/options'
 
 export async function GET(req: NextRequest, res: NextResponse) {
 
+  console.log('GET /api/posts route hit...')
+
   // Bounce the request if the user is not authenticated
   const session = await getServerSession(authOptions)
   if (!session) {
