@@ -31,9 +31,11 @@ any arbitrary images for both the "leader" or "hero" image that's shown on the b
 
 I wired up a Markdown "What you see is what you get" (WYSIWYG) editor for my content - so I can also include rich elements such as my newsletter subscription widget, for example. 
 
-## Image generation
+## Image generation via StableDiffusion XL
 
-A couple of months ago, I started experimenting with using StableDiffusion generated images for my blog posts. I'm especially fond of generating pixel-art style images - and I found a great Discord that runs several bots allowing you to generate images on demand - but (reasonably) with 
+A couple of months ago, I started experimenting with using StableDiffusion generated images for my blog posts. 
+
+I'm especially [fond](https://www.zackproser.com/blog/maintaining-this-site-fucking-sucks) of [generating](https://www.zackproser.com/blog/maintaining-this-site-no-longer-fucking-sucks) pixel [art](https://www.zackproser.com/blog/i-am-joining-pinecone-io) or [neon-punk](https://www.zackproser.com/blog/video-reviewing-github-prs-in-terminal) style images - and I found a great Discord that runs several bots allowing you to generate images on demand - but (reasonably) with 
 some rate limits around generation. I wanted to remove that limitation for myself and set myself up with a reliable pipeline for unlimited image generation. 
 
 ![Panthalia generates images for my blog posts based on the prompts I submit](./public/panthalia-example-stable-diffusion-generation.png)
