@@ -17,12 +17,36 @@ import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
 import dynamic from "next/dynamic";
 
+
 const MDEditor = dynamic(
   () => import("@uiw/react-md-editor"),
   { ssr: false }
 );
 
 function EditPost({ post }) {
+
+  const [images, setImages] = useState([])
+  const [showImages, setShowImages] = useState(true)
+
+  useEffect(() => {
+    console.log(`useEffect is running..`)
+    fetch(`/api/images/${post.id}`)
+      .then(response => response.json())
+      .then(data => setImages(data.images))
+  }, [post.id])
+
+  const handleDelete = (imageId) => {
+    fetch(`/api/images/${imageId}`, { method: 'DELETE' })
+      .then(response => {
+        if (response.ok) {
+          setImages(images.filter(image => image.id !== imageId))
+        }
+      })
+  }
+
+  const toggleImages = () => {
+    setShowImages(!showImages)
+  }
 
   console.log(`EditPost component...:%o`, post)
 
@@ -63,73 +87,113 @@ function EditPost({ post }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="edit-post-form w-full mb-4">
-      <div className="mb-4">
-        <label className="block text-gray-700 font-bold mb-2">
-          Title
-        </label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-      </div>
-
-      <div className="mb-4">
-        <label className="block text-gray-700 font-bold mb-2">
-          Summary
-        </label>
-        <textarea
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-40 resize-none"
-          value={summary}
-          onChange={(e) => setSummary(e.target.value)}
-        />
-      </div>
-
-
-      <div className="w-full mb-4">
-        <label className="block text-gray-700 font-bold mb-2">
-          Content:
-        </label>
-        <MDEditor value={content} onChange={setContent} />
-      </div>
-
-      <div className="mb-4">
-        <label className="block text-gray-700 font-bold mb-2">
-          Leader Image Prompt:
+    <>
+      <form onSubmit={handleSubmit} className="edit-post-form w-full mb-4">
+        <div className="mb-4">
+          <label className="block text-gray-700 font-bold mb-2">
+            Title
+          </label>
           <input
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             type="text"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline resize-none"
-            value={leaderImagePrompt}
-            onChange={(e) => setLeaderImagePrompt(e.target.value)}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
           />
-        </label>
-      </div>
+        </div>
 
-      <div className="flex justify-center space-x-4 mt-12 mb-4">
-        <Link
-          href={"/"}
-        >
-          <button
-            type="button"
-            className="px-4 py-2 bg-blue-300 text-white rounded hover:bg-blue-600"
+        <div className="mb-4">
+          <label className="block text-gray-700 font-bold mb-2">
+            Summary
+          </label>
+          <textarea
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-40 resize-none"
+            value={summary}
+            onChange={(e) => setSummary(e.target.value)}
+          />
+        </div>
+
+
+        <div className="w-full mb-4">
+          <label className="block text-gray-700 font-bold mb-2">
+            Content:
+          </label>
+          <MDEditor value={content} onChange={setContent} />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-gray-700 font-bold mb-2">
+            Leader Image Prompt:
+            <input
+              type="text"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline resize-none"
+              value={leaderImagePrompt}
+              onChange={(e) => setLeaderImagePrompt(e.target.value)}
+            />
+          </label>
+        </div>
+
+        <div className="flex justify-center space-x-4 mt-12 mb-4">
+          <Link
+            href={"/"}
           >
-            Posts
+            <button
+              type="button"
+              className="px-4 py-2 bg-blue-300 text-white rounded hover:bg-blue-600"
+            >
+              Posts
+            </button>
+          </Link>
+
+
+          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mr-4 rounded focus:outline-none focus:shadow-outline" type="button" onClick={addImagePrompt}>
+            Add Image Prompt
           </button>
-        </Link>
 
+          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 ml-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+            Update Post
+          </button>
 
-        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mr-4 rounded focus:outline-none focus:shadow-outline" type="button" onClick={addImagePrompt}>
-          Add Image Prompt
-        </button>
+        </div>
+      </form>
 
-        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 ml-4 rounded focus:outline-none focus:shadow-outline" type="submit">
-          Update Post
-        </button>
+      <h3>Post images</h3>
 
-      </div>
-    </form>
+      <button
+        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+        onClick={toggleImages}
+      >
+        {showImages ? 'Hide Images' : 'Show Images'}
+      </button>
+      {showImages && (
+        <div className="mt-4">
+          <h2 className="text-xl mb-2">Images</h2>
+          <button onClick={toggleImages} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-2">
+            Hide Images
+          </button>
+          <div>
+            <div className="grid grid-cols-3 gap-4">
+              {images.map(image => (
+                <div key={image.id} className="relative">
+                  <Image
+                    className="object-cover w-full h-32 rounded-md"
+                    src={image.image_url}
+                    alt={image.alt}
+                    width={350}
+                    height={350}
+                  />
+                  <button
+                    className="absolute top-0 right-0 bg-red-600 hover:bg-red-800 text-white font-bold py-1 px-2 rounded"
+                    onClick={() => handleDelete(image.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

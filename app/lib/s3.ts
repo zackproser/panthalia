@@ -34,4 +34,22 @@ export async function uploadImageToS3(url: string, key: string) {
   });
 }
 
+export async function deleteImageFromS3(key: string) {
+
+  console.log(`deleteImageFromS3 - Deleting image from S3: ${key}`);
+
+  return new Promise((resolve, reject) => {
+    s3.deleteObject({
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: key,
+    }, function(err: Error, data: S3.DeleteObjectOutput) {
+      if (err) {
+        console.log(`Error deleting image from S3: ${err}`);
+        reject(err);
+      }
+      resolve(data);
+    });
+  });
+}
+
 
