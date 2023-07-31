@@ -57,7 +57,22 @@ which will end up pushed on the same branch - resulting in a new Vercel preview 
 
 ![Panthalia creates pull requests that include the MDX boilerplate](./public/panthalia-example-pull-request.png)
 
-Once back at my laptop, posts can be polished and their pull requests merged to publish them live on my blog. For many blog posts, the above loop is sufficiently powerful for me to author and publish them live - start to finish - because merging the pull request results in a live deployment to [https://zackproser.com](https://zackproser.com).
+Once back at my laptop, posts can be polished and their pull requests merged to publish them live on my blog. For many blog posts, the loop is sufficiently powerful for me to author and publish them live - start to finish - because merging the pull request results in a live deployment to [https://zackproser.com](https://zackproser.com).
+
+```mermaid
+graph LR;
+    A[User Accesses Panthalia App] --> B[Create New Post];
+    B --> D{Post Created in Vercel Postgres};
+    B --> C[Branch Created in Portfolio Site];
+    C --> E[Pull Request Opened];
+    D --> F[Edit Post Content];
+    F --> G{Happy with Post?};
+    G --> |No| F;
+    G --> |Yes| H[Finalize and Merge Pull Request];
+    F --> I[Prompt for Image Generation];
+    I --> J[Generate Image Stable Diffusion];
+    J --> F;
+```
 
 ## Architecture, philosophy and challenges
 
@@ -87,23 +102,6 @@ which contains my blog.
 
 My hope is that by lowering the friction to publish a full blog post, I can fire off the initial pull requests for my next 5 posts from my phone while waiting in line somewhere - up to and including using Stable Diffusion to generate my 
 blog post images - which I've been [doing lately](https://www.zackproser.com/blog/first-see-if-youve-got-the-bug) and [really enjoying](https://www.zackproser.com/blog/i-am-joining-pinecone-io). 
-
-## How does it work?
-
-```mermaid
-graph LR;
-    A[User Accesses Panthalia App] --> B[Create New Post];
-    B --> D{Post Created in Vercel Postgres};
-    B --> C[Branch Created in Portfolio Site];
-    C --> E[Pull Request Opened];
-    D --> F[Edit Post Content];
-    F --> G{Happy with Post?};
-    G --> |No| F;
-    G --> |Yes| H[Finalize and Merge Pull Request];
-    F --> I[Prompt for Image Generation];
-    I --> J[Generate Image via DALL-E or Stable Diffusion];
-    J --> F;
-```
 
 ## Features
 
