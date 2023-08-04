@@ -16,8 +16,8 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <AuthProvider>
-        <body className={inter.className}>{children}</body>
+        <body className="{inter.className} bg-gradient-to-r from-green-400 to-green-800">{children}</body>
       </AuthProvider>
-    </html>
+    </html >
   )
 }

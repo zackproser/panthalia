@@ -6,11 +6,13 @@ const slugify = require('slugify');
 const git = require('isomorphic-git');
 const http = require('isomorphic-git/http/node');
 
+const clonePath = '/tmp/repo';
+
 export function slugifyTitle(title: string): string {
   return slugify(title, { remove: /[*+~.()'"!:@?]/g }).toLowerCase();
 }
 
-export async function cloneRepoAndCheckoutBranch(clonePath: string, branchName: string) {
+export async function cloneRepoAndCheckoutBranch(branchName: string) {
 
   console.log(`Cloning portfolio repo...`);
 
@@ -55,7 +57,12 @@ export async function commitAndPush(dirPath: string, filepath: string, branchNam
   }
 
   // Add a file to the staging area
-  await git.add({ fs, dir: dirPath, filepath });
+  await git.add({
+    fs,
+    dir: dirPath,
+    // Commit all the files in the path
+    filepath: '.'
+  });
 
   // Commit the changes
   await git.commit({

@@ -10,6 +10,8 @@ import Image from 'next/image'
 import panthaliaLogo from '/public/panthalia-logo-2.png'
 import Spinner from '../../utils/spinner'
 
+import { imageSlug } from '../../utils/images'
+
 import { useSession } from 'next-auth/react';
 import LoginButton from '../../components/login-btn'
 
@@ -26,13 +28,16 @@ const MDEditor = dynamic(
 function EditPost({ post }) {
 
   const [images, setImages] = useState([])
+  const [loadingImages, setLoadingImages] = useState(true)
   const [showImages, setShowImages] = useState(true)
+  const [commitingImages, setCommitingImages] = useState(false)
 
   useEffect(() => {
     console.log(`useEffect is running..`)
     fetch(`/api/images/${post.id}`)
       .then(response => response.json())
       .then(data => setImages(data.images))
+    setLoadingImages(false)
   }, [post.id])
 
   const handleDelete = (imageId) => {
@@ -40,6 +45,16 @@ function EditPost({ post }) {
       .then(response => {
         if (response.ok) {
           setImages(images.filter(image => image.id !== imageId))
+        }
+      })
+  }
+
+  const commitImages = () => {
+    setCommitingImages(true)
+    fetch(`/api/commit-images/`, { method: 'GET' })
+      .then(response => {
+        if (response.ok) {
+          setCommitingImages(false)
         }
       })
   }
@@ -153,34 +168,47 @@ function EditPost({ post }) {
             Update Post
           </button>
 
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            onClick={toggleImages}
+          >
+            {showImages ? 'Hide Images' : 'Show Images'}
+          </button>
+
+          <button
+            className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            disabled={commitingImages}
+            onClick={commitImages}
+          >
+            {/* Show spinner if committing images */}
+            {commitingImages && <Spinner />} Commit images to branch
+          </button>
+
+
         </div>
       </form>
 
-      <h3>Post images</h3>
-
-      <button
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-        onClick={toggleImages}
-      >
-        {showImages ? 'Hide Images' : 'Show Images'}
-      </button>
       {showImages && (
         <div className="mt-4">
-          <h2 className="text-xl mb-2">Images</h2>
-          <button onClick={toggleImages} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-2">
-            Hide Images
-          </button>
+          {/* Show images */}
+          {(loadingImages && <span><Spinner /> Loading images...</span>)}
+          <hr className="w-148 h-1 mx-auto my-4 bg-gray-100 border-0 rounded md:my-10 dark:bg-gray-700"></hr>
           <div>
             <div className="grid grid-cols-3 gap-4">
               {images.map(image => (
                 <div key={image.id} className="relative">
                   <Image
-                    className="object-cover w-full h-32 rounded-md"
+                    className="object-cover w-full rounded-md"
                     src={image.image_url}
                     alt={image.alt}
-                    width={350}
-                    height={350}
+                    width={550}
+                    height={550}
                   />
+                  <button
+                    className="absolute top-0 left-0 bg-blue-600 hover:bg-blue-800 text-white font-bold py-1 px-2 rounded"
+                  >
+                    {imageSlug(image.image_url)}
+                  </button>
                   <button
                     className="absolute top-0 right-0 bg-red-600 hover:bg-red-800 text-white font-bold py-1 px-2 rounded"
                     onClick={() => handleDelete(image.id)}
