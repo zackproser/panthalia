@@ -9,12 +9,11 @@ export default function PostCard({ post, deletePost }) {
     deletePost(post.id);
   }
 
-
   return (
-    <div className="w-80 h-80 mx-auto bg-green-300 rounded-xl shadow-md overflow-hidden md:max-w-2xl">
+    <div className="w-80 h-80 mx-auto bg-amber-100 rounded-xl shadow-md overflow-hidden md:max-w-2xl">
       <div className="flex flex-col h-full p-4">
         <div>
-          <Link href={`/posts/${post.id}`} className="block mt-1 text-lg leading-tight font-medium text-black hover:underline">
+          <Link href={`/posts/${post.id}`} className="block mt-1 text-lg leading-tight font-bold text-slate-900 hover:underline">
             {post.id} - {post.title}
           </Link>
 
@@ -22,8 +21,8 @@ export default function PostCard({ post, deletePost }) {
             <Image src={post.leaderimageurl ?? 'https://picsum.photos/200/300'} width={75} height={75} />
           </div>
 
-          <p className="mt-2 text-gray-500">{truncate(post.summary, 50)}</p>
-          <p className="mt-2 text-gray-400">{truncate(post.content, 50)}</p>
+          <p className="mt-2 text-slate-800">{truncate(post.summary, 50)}</p>
+          <p className="mt-2 text-slate-600">{truncate(post.content, 50)}</p>
 
           <div className="mt-auto flex space-x-2 pb-2 items-center">
             {/* Render post status */}
