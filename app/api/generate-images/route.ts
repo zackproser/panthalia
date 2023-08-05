@@ -38,10 +38,9 @@ export async function POST(request: Request) {
   // Save the S3 image to the posts table to associate it with the current Post
   const result = await sql`
     INSERT INTO images 
-      (IMAGE_URL, POST_ID) 
-    VALUES (${uploadedImageS3Path as string}, ${newPost.id}) 
+      (image_url, post_id) 
+    VALUES (${uploadedImageS3Path}, ${newPost.id}) 
   `
-
   console.log(`Result of storing new image in posts table: %o`, result)
 
   return NextResponse.json({
