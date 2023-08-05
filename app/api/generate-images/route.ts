@@ -41,7 +41,17 @@ export async function POST(request: Request) {
       (image_url, post_id) 
     VALUES (${uploadedImageS3Path}, ${newPost.id}) 
   `
+
   console.log(`Result of storing new image in posts table: %o`, result)
+
+  // Save the leader image in the posts table
+  const postUpdateResult = await sql`
+    UPDATE posts
+    SET leaderimageurl = ${uploadedImageS3Path}
+    WHERE id = ${newPost.id}
+  `
+
+  console.log(`Result of updating posts table: %o`, postUpdateResult)
 
   return NextResponse.json({
     success: true
