@@ -21,6 +21,9 @@ export default function PostsPage() {
   const deletePost = async (postId) => {
     await fetch(`/api/posts/${postId}`, {
       method: 'DELETE'
+    }).then(() => {
+      // Remove the deleted post
+      setPosts(posts.filter(post => post.id !== postId))
     })
   }
 
