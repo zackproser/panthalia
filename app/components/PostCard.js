@@ -1,12 +1,60 @@
+import { useState, useEffect } from 'react';
+
 import Image from 'next/image';
 import Link from 'next/link';
+
+import checkIcon from '../../public/check-icon.png'
 
 import { truncate } from '../utils/posts';
 
 export default function PostCard({ post, deletePost }) {
 
-  const handleDelete = () => {
-    deletePost(post.id);
+  const handleDelete = async () => {
+    await deletePost(post.id);
+  }
+
+  const [deleteState, setDeleteState] = useState('idle');
+  const [deleteTimeout, setDeleteTimeout] = useState(null);
+
+  useEffect(() => {
+    return () => {
+      if (deleteTimeout) clearTimeout(deleteTimeout);
+    };
+  }, [deleteTimeout]);
+
+  const handleDeleteClick = async () => {
+    if (deleteState === 'idle') {
+      setDeleteState('confirm');
+    } else if (deleteState === 'confirm') {
+      setDeleteState('deleting');
+      try {
+        await handleDelete();
+        setDeleteState('deleted');
+        const timeout = setTimeout(() => {
+          // Remove post from the list here
+        }, 2000);
+        setDeleteTimeout(timeout);
+      } catch (error) {
+        console.error('Error deleting the post:', error);
+        setDeleteState('idle');
+      }
+    }
+  };
+
+  let buttonText = "Delete post";
+
+  switch (deleteState) {
+    case 'confirm':
+      buttonText = "Are you sure?";
+      break;
+    case 'deleting':
+      buttonText = "Deleting";
+      break;
+    case 'deleted':
+      buttonText = "Successfully deleted";
+      break;
+    default:
+      break;
   }
 
   return (
@@ -47,8 +95,15 @@ export default function PostCard({ post, deletePost }) {
               </button>
             </Link>
 
-            <button onClick={handleDelete} className="inline-flex items-center gap-x-1.5 rounded-md bg-red-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">
-              Delete
+            <button onClick={handleDeleteClick} className="inline-flex items-center gap-x-1.5 rounded-md bg-red-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">
+              {deleteState == "confirm" &&
+                <Image
+                  width={15}
+                  height={15}
+                  src={checkIcon}
+                  alt="confirm deletion icon"
+                />}
+              {buttonText}
             </button>
           </div>
         </div>
