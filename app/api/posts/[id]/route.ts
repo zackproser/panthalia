@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { startGitPostUpdates } from '../../../lib/github';
 
 import Post from '../../../types/posts';
+import { imagePrompt } from '../../../types/images';
 
 import { getServerSession } from "next-auth/next"
 import { authOptions } from '../../../lib/auth/options';
@@ -30,9 +31,14 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
       console.log(`fetched post from DB: %o`, result.rows[0]);
 
-      return new Response(JSON.stringify(result.rows[0]), {
-        status: 200
-      });
+      // Unstringify the image prompt fields 
+      let postResult = result.rows[0];
+      console.log(`postResult: %o`, postResult);
+
+      postResult.leaderimageprompt = JSON.parse(postResult.leaderimageprompt);
+      postResult.imagePrompts = JSON.parse(postResult.imageprompts);
+
+      return NextResponse.json(postResult, { status: 200 });
 
     } else {
       // Get all posts if no id
@@ -41,9 +47,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
         FROM posts
       `;
 
-      return new Response(JSON.stringify({ posts: result.rows }), {
-        status: 200
-      });
+      return NextResponse.json({ posts: result.rows }, { status: 200 });
     }
   } catch (error) {
 
@@ -77,7 +81,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         title = ${updatedPost.title},
         summary = ${updatedPost.summary},
         content = ${updatedPost.content},
-        leaderImagePrompt = ${updatedPost.leaderImagePrompt},
+        leaderImagePrompt = ${JSON.stringify(updatedPost.leaderImagePrompt)},
         imagePrompts = ${JSON.stringify(updatedPost.imagePrompts)}
       WHERE id = ${id}
       RETURNING *

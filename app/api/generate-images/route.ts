@@ -4,8 +4,7 @@ import { uploadImageToS3 } from '../../lib/s3';
 import slugify from 'slugify'
 import { sql } from '@vercel/postgres'
 
-import Post from '../../types/posts';
-
+import { imagePrompt } from '../../types/images';
 
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
@@ -14,15 +13,15 @@ const replicate = new Replicate({
 export async function POST(request: Request) {
   console.log(`generate-images POST route hit...`)
 
-  const newPost: Post = await request.json() as Post
+  const prompt: imagePrompt = await request.json() as imagePrompt
 
-  console.log(`generate-images newPost: %o`, newPost)
+  console.log(`generate-images prompt: %o`, prompt)
 
   const output = await replicate.run(
     "stability-ai/sdxl:2b017d9b67edd2ee1401238df49d75da53c523f36e363881e057f5dc3ed3c5b2",
     {
       input: {
-        prompt: newPost.leaderImagePrompt
+        prompt: prompt.text
       }
     }
   );
@@ -30,7 +29,7 @@ export async function POST(request: Request) {
   console.log(`Got output from calling replicate API: %o`, output)
   const stableDiffusionImageURL = output[0];
 
-  const s3UploadPath = slugify(newPost.leaderImagePrompt.substring(0, 30))
+  const s3UploadPath = slugify(prompt.text.toLowerCase().substring(0, 30))
   console.log(`slugified s3UploadPath: %o`, s3UploadPath)
 
   const uploadedImageS3Path = await uploadImageToS3(stableDiffusionImageURL, s3UploadPath);
@@ -39,19 +38,20 @@ export async function POST(request: Request) {
   const result = await sql`
     INSERT INTO images 
       (image_url, post_id) 
-    VALUES (${uploadedImageS3Path}, ${newPost.id}) 
+    VALUES (${uploadedImageS3Path}, ${prompt.postId}) 
   `
 
   console.log(`Result of storing new image in posts table: %o`, result)
 
-  // Save the leader image in the posts table
-  const postUpdateResult = await sql`
+  // If the prompt is of type leader image, then save it in the posts table's leaderimageprompt column
+  if (prompt.type === "leader") {
+    const postUpdateResult = await sql`
     UPDATE posts
     SET leaderimageurl = ${uploadedImageS3Path}
-    WHERE id = ${newPost.id}
+    WHERE id = ${prompt.postId}
   `
-
-  console.log(`Result of updating posts table: %o`, postUpdateResult)
+    console.log(`Result of updating posts table: %o`, postUpdateResult)
+  }
 
   return NextResponse.json({
     success: true

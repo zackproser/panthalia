@@ -23,7 +23,6 @@ const MDEditor = dynamic(
 );
 
 function NewPostForm() {
-
   const { data: session } = useSession();
 
   const router = useRouter();
@@ -33,17 +32,21 @@ function NewPostForm() {
   const [title, setTitle] = useState('');
   const [summary, setSummary] = useState('');
   const [content, setContent] = useState('');
-  const [leaderImagePrompt, setLeaderImagePrompt] = useState('');
-  const [imagePrompts, setImagePrompts] = useState(['']);
+  const [leaderImagePrompt, setLeaderImagePrompt] = useState({ type: 'leader', text: '' });
+  const [imagePrompts, setImagePrompts] = useState([]);
 
   const addImagePrompt = () => {
-    setImagePrompts([...imagePrompts, '']);
+    setImagePrompts([...imagePrompts, { type: 'image', text: '' }]);
   };
 
+  const updateLeaderPrompt = (prompt) => {
+    setLeaderImagePrompt({ type: 'leader', text: prompt })
+  }
+
   const updateImagePrompt = (index, prompt) => {
-    const updatedPrompts = [...imagePrompts];
-    updatedPrompts[index] = prompt;
-    setImagePrompts(updatedPrompts);
+    const imagePrompt = { type: 'image', text: prompt }
+    imagePrompts[index] = imagePrompt
+    setImagePrompts([...imagePrompts])
   };
 
   const submitForm = async (e) => {
@@ -125,8 +128,8 @@ function NewPostForm() {
           <label className="font-semibold text-lg">Leader Image Prompt:</label>
           <input
             type="text"
-            value={leaderImagePrompt}
-            onChange={(e) => setLeaderImagePrompt(e.target.value)}
+            value={leaderImagePrompt.text}
+            onChange={(e) => updateLeaderPrompt(e.target.value)}
             className="p-2 border rounded"
           />
         </div>
@@ -135,7 +138,7 @@ function NewPostForm() {
             <label className="font-semibold text-lg">Image Prompt {index + 1}:</label>
             <input
               type="text"
-              value={prompt}
+              value={prompt.text}
               onChange={(e) => updateImagePrompt(index, e.target.value)}
               className="p-2 border rounded"
             />
