@@ -1,3 +1,5 @@
+import { imagePrompt } from './images'
+
 export default interface Post {
   id?: number;
   title: string;
@@ -7,6 +9,6 @@ export default interface Post {
   gitbranch: string;
   githubpr: string;
   leaderimageurl: string;
-  leaderImagePrompt: string;
-  imagePrompts: string[];
+  leaderImagePrompt: imagePrompt;
+  imagePrompts: imagePrompt[];
 }

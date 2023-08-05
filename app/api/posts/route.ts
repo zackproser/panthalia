@@ -38,7 +38,6 @@ export async function GET(req: NextRequest, res: NextResponse) {
 
 export async function POST(request: Request) {
   try {
-
     const session = await getServerSession(authOptions)
 
     if (!session) {
@@ -68,7 +67,7 @@ export async function POST(request: Request) {
       ${slug},
       ${summary},
       ${content},
-      ${leaderImagePrompt},
+      ${JSON.stringify(leaderImagePrompt)},
       ${JSON.stringify(imagePrompts)},
       'drafting'
     )

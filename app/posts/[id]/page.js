@@ -68,14 +68,24 @@ function EditPost({ post }) {
 
   console.log(`EditPost component...:%o`, post)
 
+  console.log(`EditPost component post.leaderImagePrompt: %s`, post.leaderimageprompt.text)
+  console.log(`EditPost component post.imageprompts: %o`, post.imageprompts)
+  console.log(`EditPost component post typeof imageprompts: %s`, typeof post.imageprompts)
+
   const [title, setTitle] = useState(post.title);
   const [summary, setSummary] = useState(post.summary);
   const [content, setContent] = useState(post.content);
-  const [leaderImagePrompt, setLeaderImagePrompt] = useState(post.leaderimageprompt);
-  const [imagePrompts, setImagePrompts] = useState(post.imageprompts);
+  const [leaderImagePrompt, setLeaderImagePrompt] = useState(post.leaderimageprompt.text);
+  const [imagePrompts, setImagePrompts] = useState(JSON.parse(post.imageprompts));
 
   const addImagePrompt = () => {
-    setImagePrompts([...imagePrompts, '']);
+    setImagePrompts([...imagePrompts, { type: 'image', text: '' }]);
+  };
+
+  const updateImagePrompt = (index, prompt) => {
+    const imagePrompt = { type: 'image', text: prompt }
+    imagePrompts[index] = imagePrompt
+    setImagePrompts([...imagePrompts])
   };
 
   const handleSubmit = async (event) => {
@@ -149,6 +159,18 @@ function EditPost({ post }) {
             />
           </label>
         </div>
+
+        {imagePrompts.map((prompt, index) => (
+          <div key={index} className="flex flex-col space-y-2">
+            <label className="font-semibold text-lg">Image Prompt {index + 1}:</label>
+            <input
+              type="text"
+              value={prompt.text}
+              onChange={(e) => updateImagePrompt(index, e.target.value)}
+              className="p-2 border rounded"
+            />
+          </div>
+        ))}
 
         <div className="flex justify-center space-x-4 mt-12 mb-4">
           <Link

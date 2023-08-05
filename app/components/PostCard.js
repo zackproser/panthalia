@@ -41,7 +41,7 @@ export default function PostCard({ post, deletePost }) {
     }
   };
 
-  let buttonText = "Delete post";
+  let buttonText = "Delete";
 
   switch (deleteState) {
     case 'confirm':
