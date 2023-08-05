@@ -15,9 +15,6 @@ import {
 
 type GetResponseType = RestEndpointMethodTypes["pulls"]["create"]["response"];
 
-// By default - clone the portfolio repo to the temp directory, which is also available
-// to Vercel functions
-const clonePath = '/tmp/repo';
 // Octokit is the GitHub API client (used for opening pull requests)
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
@@ -100,7 +97,7 @@ export async function updatePostWithOpenPR(updatedPost: Post) {
   // Clone the repo and checkout the same branch associated with the open PR
   // We'll always need to re-clone the repo each time due to the nature of the ephemeral 
   // serverless environment the "backend" / Vercel functions are running in 
-  const cloneUrl = await cloneRepoAndCheckoutBranch(clonePath, updatedPost.gitbranch);
+  const cloneUrl = await cloneRepoAndCheckoutBranch(updatedPost.gitbranch, true);
 
   console.log(`cloneUrl: ${cloneUrl}`);
 
@@ -119,7 +116,7 @@ export async function updatePostWithOpenPR(updatedPost: Post) {
 
   // Commit the update and push it on the existing branch 
   const update = true
-  await commitAndPush(cloneUrl, postFilePath, updatedPost.gitbranch, updatedPost.title, update);
+  await commitAndPush(updatedPost.gitbranch, updatedPost.title, update);
 }
 
 export async function processPost(newPost: Post) {
@@ -127,6 +124,9 @@ export async function processPost(newPost: Post) {
   console.log(`newPost data submitted to processPost function: %o`, newPost)
 
   const slugifiedTitle = slugifyTitle(newPost.title);
+
+  // The branch name for a given post is determined one time and then stored in the database for future reference
+  // All subsequent times the branch name is needed it can be fetched from the database
   const branchName = `panthalia-${slugifiedTitle}-${Date.now()}`
 
   // Update the post record with the generated branch name and the slug
@@ -140,7 +140,7 @@ export async function processPost(newPost: Post) {
   console.log(`Result of updating post with gitbranch: %o`, addBranchResult);
 
   // Clone my portfolio repository from GitHub so we can add the post to it
-  const cloneUrl = await cloneRepoAndCheckoutBranch(clonePath, branchName);
+  const cloneUrl = await cloneRepoAndCheckoutBranch(branchName);
   console.log(`cloneUrl: ${cloneUrl}`);
 
   // Generate post content
@@ -156,7 +156,7 @@ export async function processPost(newPost: Post) {
 
   // Add new blog post and make an initial commit
   const update = false
-  await commitAndPush(cloneUrl, postFilePath, branchName, newPost.title, update);
+  await commitAndPush(branchName, newPost.title, update);
 
   const prTitle = `Add blog post: ${newPost.title}`;
   const baseBranch = 'main'

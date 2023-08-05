@@ -50,12 +50,15 @@ function EditPost({ post }) {
   }
 
   const commitImages = () => {
+    console.log(`commitImages is running`)
     setCommitingImages(true)
-    fetch(`/api/commit-images/`, { method: 'GET' })
+    fetch(`/api/commit-images/${post.id}`, { method: 'GET' })
       .then(response => {
         if (response.ok) {
           setCommitingImages(false)
         }
+      }).catch(error => {
+        console.error(error)
       })
   }
 
@@ -175,18 +178,20 @@ function EditPost({ post }) {
             {showImages ? 'Hide Images' : 'Show Images'}
           </button>
 
-          <button
-            className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            disabled={commitingImages}
-            onClick={commitImages}
-          >
-            {/* Show spinner if committing images */}
-            {commitingImages && <Spinner />} Commit images to branch
-          </button>
-
-
         </div>
       </form>
+
+      <div>
+        <button
+          className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          disabled={commitingImages}
+          onClick={commitImages}
+        >
+          {/* Show spinner if committing images */}
+          {commitingImages && <Spinner />} Commit images to branch
+        </button>
+      </div>
+
 
       {showImages && (
         <div className="mt-4">

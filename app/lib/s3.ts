@@ -3,31 +3,64 @@ import { S3 } from 'aws-sdk';
 import { join } from 'path';
 import fs from 'fs'
 
+import { clonePath } from '../lib/git'
+
 // Initialize the Amazon S3 client
 const s3 = new S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
 });
 
+async function downloadImageFromS3(imageKey: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const imageFilepath = join(clonePath, 'src', 'images', `${imageKey}.png`).toLowerCase()
+
+    console.log(`downloadImageFromS3 - Downloading image from S3: ${imageKey}`)
+
+    const params = {
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: imageKey
+    };
+
+    const file = fs.createWriteStream(imageFilepath);
+    const stream = s3.getObject(params).createReadStream();
+
+    stream.on('error', reject);
+
+    stream.on('data', (chunk) => {
+      file.write(chunk);
+    });
+
+    stream.on('end', () => {
+      file.end();
+    });
+
+    file.on('finish', function() {
+      console.log(`S3 imageKey: ${imageKey} downloaded successfully to filepath: ${imageFilepath}`);
+      resolve();
+    });
+
+    file.on('error', reject);
+  });
+}
+
 export async function downloadImagesFromS3(urls: string[]) {
   // Download each image, commit and push
   for (const url of urls) {
+
     const s3Url = new URL(url);
-    const imageKey = s3Url.pathname.substring(1); // remove leading "/"
-    const fileName = join('src', 'images', imageKey);
+    const imageKey = s3Url.pathname.substring(1);
 
-    // Download from S3 to local directory
-    const params = { Bucket: process.env.S3_BUCKET_NAME, Key: imageKey };
-    const fileStream = fs.createWriteStream(fileName);
-    s3.getObject(params).createReadStream().pipe(fileStream);
-
-    fileStream.on('error', (err) => {
-      console.log(`Error writing S3 image to local filesystem err;`, err);
-    });
+    try {
+      await downloadImageFromS3(imageKey);
+    } catch (error) {
+      console.error('Error downloading the image:', error);
+    }
   }
 }
 
-export async function uploadImageToS3(url: string, key: string) {
+// Returns a Promise which returns a string
+export async function uploadImageToS3(url: string, key: string): Promise<string> {
   // Fetch the image from the URL
   const response = await fetch(url);
 
