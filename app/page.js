@@ -11,6 +11,7 @@ import Spinner from './utils/spinner'
 export default function PostsPage() {
 
   const { data: session } = useSession();
+  const [search, setSearch] = useState('');
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,6 +20,11 @@ export default function PostsPage() {
       method: 'DELETE'
     })
   }
+
+  // Filter posts based on search query
+  const filteredPosts = posts.filter(post =>
+    post.title.toLowerCase().includes(search.toLowerCase())
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,6 +52,15 @@ export default function PostsPage() {
             src="/panthalia-logo-2.png"
             className="h-36 w-36 rounded-md border border-gray-200 ml-4"
           />
+          {/* Add input to allow search query update */}
+          <input
+            type="text"
+            className="w-full rounded-md border border-gray-200 ml-2 p-3"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search posts..."
+          />
+
         </div>
 
         {loading &&
@@ -56,7 +71,7 @@ export default function PostsPage() {
         }
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {posts.map(post => (
+          {filteredPosts.map(post => (
             <PostCard
               key={post.id}
               post={post}
