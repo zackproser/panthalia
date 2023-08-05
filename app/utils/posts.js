@@ -12,7 +12,6 @@ export async function fetchPosts() {
 export async function generatePostContent(title, summary, content, imagePrompts) {
 
   // The following template sets up the basic configuration for all my blog posts
-
   const mdx = `
 
 import { ArticleLayout } from '@/components/ArticleLayout'
@@ -34,5 +33,12 @@ export default (props) => <ArticleLayout meta={meta} {...props} />
   
 `
   return mdx
+}
+
+export function truncate(text, length) {
+  if (text.length <= length) {
+    return text;
+  }
+  return text.substring(0, length) + "...";
 }
 
