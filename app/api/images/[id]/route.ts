@@ -3,6 +3,8 @@ import { sql } from '@vercel/postgres';
 
 import { deleteImageFromS3 } from '../../../lib/s3';
 
+import { imageSlug } from '../../../utils/images';
+
 import url from 'url';
 
 import { getServerSession } from "next-auth/next"
@@ -53,21 +55,20 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
   const imageId = params.id
 
-  const result = await sql`
-    SELECT * from 
-    images 
-    WHERE id = ${imageId}
-    RETURNING *
-  `
+  console.log(`images DELETE route hit with imageId: ${imageId}`)
 
-  // Get the S3 image path by splitting it off the URL 
-  const urlObject = new url.URL(result.rows[0].image_url);
-  const s3PathToDelete = urlObject.pathname
+  // Delete the image row from the images table 
+  const result = await sql`DELETE FROM images WHERE id = ${imageId}`;
+  console.log(`result of deleting image with id: ${imageId}: %o`, result)
+
+  const body = await req.json();
+  console.log(`body of DELETE request: %o`, body)
+
+  const s3PathToDelete = imageSlug(body.imageUrl);
+
   const deleteResult = await deleteImageFromS3(s3PathToDelete)
-
   console.log(`result of deleting S3 image at path: ${s3PathToDelete}: %o`, deleteResult)
 
   return NextResponse.json({ success: deleteResult }, { status: 200 })
-
 }
 

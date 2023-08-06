@@ -120,12 +120,19 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
   console.log(`id: ${id} `);
 
   try {
+
+    // First, clear out all associated images from the database
+    const ImgResult = await sql`
+      DELETE FROM images
+      WHERE post_id = ${id}
+    `;
+    console.log(`ImgResult: % o`, ImgResult);
+
     const result = await sql`
       DELETE FROM posts
       WHERE id = ${id}
       RETURNING *
     `;
-
     console.log(`result: % o`, result);
 
     return NextResponse.json({ post: result.rows[0] }, { status: 200 });
