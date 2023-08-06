@@ -8,9 +8,6 @@
 
 Panthalia is a homebrewed blog post accelerator system - it allows me to author rich media blog posts, from ideation through to publishing live, while waiting in line somewhere - on my phone.
 
-It is very much tightly coupled to the architecture of my blog and the manner in which I compose blog posts. While it leverages some "AI" services, the main purpose of the project *is not* to have AI take 
-over authoring blog posts for me or in my style. 
-
 **Panthalia enables me to kick-off blog posts as quickly as I can think of ideas for new posts** - and gives me the option to either see production all the way through on my phone, or return to the pull request opened by Panthalia once I'm back at a laptop or desktop.
 
 ## Available anywhere 
@@ -54,6 +51,12 @@ The leader image prompt is generated asynchronously in the background, as are an
 are displayed. Images can be "rejected" - meaning I don't like them for some reason or they're borked - and they'll be deleted simultaneously in the database and S3. 
 
 Images can also be accepted - those are separately saved to the same branch as the blog post and pushed up to GitHub. 
+
+## Management of multiple simultaneous blog posts 
+
+Panthalia allows me to start, manage and update multiple posts simultaneously - so that I can skip jotting down notes and just start posts and merge then when they're ready. 
+
+![Panthalia mobile post management](./docs/images/panthalia-mobile-index-page.png)
 
 ## Pull requests, branch updates and Vercel preview deployments
 
