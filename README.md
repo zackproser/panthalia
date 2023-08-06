@@ -6,39 +6,44 @@
 
 ## Overview
 
-Panthalia is a homebrewed blog post accelerator system. It is very much tightly coupled to the architecture of my blog and the manner in which I compose blog posts. While it leverages some "AI" services, the main purpose of the project *is not* to have AI take 
-over authoring blog posts for me or in my style. 
+Panthalia is a homebrewed blog post accelerator system - it allows me to author rich media blog posts, from ideation through to publishing live, while waiting in line somewhere - on my phone.
 
 **Panthalia enables me to kick-off blog posts as quickly as I can think of ideas for new posts** - and gives me the option to either see production all the way through on my phone, or return to the pull request opened by Panthalia once I'm back at a laptop or desktop.
 
-## Available anywhere - but only for me
+## Available anywhere 
 
-A mobile-first experience             | For me and only me 
+A mobile-first experience available anywhere            | Guarded by GitHub oAuth
 :-------------------------:|:-------------------------:
-![Panthalia is a homebrewed blog post accelerator system](./public/panthalia-mobile-login-small.png) | ![Panthalia is an app you could log into if you were me](./public/panthalia-github-auth.png)
-
-This app is currently for me, and for me alone. I am the sole GitHub user who can log into it. It exposes a streamlined mobile-friendly 
-interface that I can hit from my phone or any other odd mobile device wherever I might be. 
+![Panthalia is a homebrewed blog post accelerator system](./docs/images/panthalia-mobile-login-small.png) | ![Panthalia is an app you could log into if you were me](./docs/images/panthalia-github-auth.png)
 
 ## Mobile form-factor - but unlimited creative potential
 
 Everything I could normally build into one of my blog posts on my favorite work laptop is now available on my phone.
 
-![Panthalia - creating blog posts on the go](./public/panthalia-new-post-mobile.png)
+![Panthalia - creating blog posts on the go](./docs/images/panthalia-new-post-mobile.png)
 
 The mobile interface is simple but powerful - because I intentionally built my blog around the MDX file format - I can write complete blog posts including images, videos and links - while also generating 
 any arbitrary images for both the "leader" or "hero" image that's shown on the blog post's index page - as well as an arbitrary number of additional images of any kind that I can slot into a blog post body. 
 
+## Generate and insert multiple images 
+
+For example, when creating a new post, I may already have in mind an idea of the series of images that will best help me tell the story, so I can request them at post creation time: 
+
+![Panthalia handles simultaneous high quality image generation via SDXL](./docs/images/panthalia-multiple-image-example.png)
+
 I wired up a Markdown "What you see is what you get" (WYSIWYG) editor for my content - so I can also include rich elements such as my newsletter subscription widget, for example. 
+
+This turns out to be also be very powerful, because I can code my own custom actions, such as one-click inserts for the generated images, or adding my newsletter capture widget with another click. 
 
 ## Image generation via StableDiffusion XL
 
 A couple of months ago, I started experimenting with using StableDiffusion generated images for my blog posts. 
 
-I'm especially [fond](https://www.zackproser.com/blog/maintaining-this-site-fucking-sucks) of [generating](https://www.zackproser.com/blog/maintaining-this-site-no-longer-fucking-sucks) pixel [art](https://www.zackproser.com/blog/i-am-joining-pinecone-io) or [neon-punk](https://www.zackproser.com/blog/video-reviewing-github-prs-in-terminal) style images - and I found a great Discord that runs several bots allowing you to generate images on demand - but (reasonably) with 
-some rate limits around generation. I wanted to remove that limitation for myself and set myself up with a reliable pipeline for unlimited image generation. 
+I'm especially [fond](https://www.zackproser.com/blog/maintaining-this-site-fucking-sucks) of [generating](https://www.zackproser.com/blog/maintaining-this-site-no-longer-fucking-sucks) pixel [art](https://www.zackproser.com/blog/i-am-joining-pinecone-io) or [neon-punk](https://www.zackproser.com/blog/video-reviewing-github-prs-in-terminal) style images - and I found a great Discord that runs several bots allowing you to generate images on demand.
 
-![Panthalia generates images for my blog posts based on the prompts I submit](./public/panthalia-example-stable-diffusion-generation.png)
+The public discord was great for allowing me to experiment with this workflow, but ultimately I decided I liked being able to generate arbitrary blog post images so much that I wanted my own reliable pipeline for unlimited image generation. 
+
+![Panthalia generates images for my blog posts based on the prompts I submit](./docs/images/panthalia-example-stable-diffusion-generation.png)
 
 Panthalia accomplishes this by connecting up to StableDiffusionXL (SDXL) running on Replicate - a pretty sweet service that lets you call all manner of machine learnings models via REST API calls. 
 
@@ -47,15 +52,31 @@ are displayed. Images can be "rejected" - meaning I don't like them for some rea
 
 Images can also be accepted - those are separately saved to the same branch as the blog post and pushed up to GitHub. 
 
+## Management of multiple simultaneous blog posts 
+
+Panthalia allows me to start, manage and update multiple posts simultaneously - so that I can skip jotting down notes and just start posts and merge then when they're ready. 
+
+![Panthalia mobile post management](./docs/images/panthalia-mobile-index-page.png)
+
 ## Pull requests, branch updates and Vercel preview deployments
 
 Panthalia immediately opens a pull request for every new post submission I create - because, at least for me, writing is an iterative process. I usually have the blocks of content roughly arrayed in my mind before I start writing, so I'll hammer those out and submit. That results in Panthalia 
-cloning my portfolio repository, creating a unique branch, adding my new post in the right place, committing and pushing it to GitHub and then using the GitHub API to open a pull request. 
+
+* cloning my portfolio repository 
+* creating a unique branch 
+* adding my new post in the right place
+* committing and pushing it to GitHub 
+* using the GitHub API to open a pull request
 
 Since my portfolio / blog site is hosted on Vercel, I get deployment previews for free in this workflow, which are also ideal for review on mobile. I can easily start a new post, take a look at it via my pull request's preview URL, then edit that post via Panthalia and submit several more updates 
 which will end up pushed on the same branch - resulting in a new Vercel preview deployment with my latest changes. 
 
-![Panthalia creates pull requests that include the MDX boilerplate](./public/panthalia-example-pull-request.png)
+![Panthalia creates pull requests that include the MDX boilerplate](./docs/images/panthalia-example-pull-request.png)
+
+Panthalia supports blog posts that are simple and only contain text, as well as rich multi-media posts containing a mix of generated images and MDX components like my Newsletter capture widget: 
+
+
+![Panthalia creates pull requests that include the MDX boilerplate](./docs/images/panthalia-example-pull-request-with-images.png)
 
 Once back at my laptop, posts can be polished and their pull requests merged to publish them live on my blog. For many blog posts, the loop is sufficiently powerful for me to author and publish them live - start to finish - because merging the pull request results in a live deployment to [https://zackproser.com](https://zackproser.com).
 
@@ -76,70 +97,23 @@ graph LR;
 
 ## Architecture, philosophy and challenges
 
-Panthalia is built to be extremely responsive and to handle all long-running tasks asynchronously. When I submit the new post form, the new post is accepted and the API route immediately returns - allowing me to either continue editing other posts 
-or to fire off another several. 
+See the [CONCEPTS doc](./docs/CONCEPTS.md) to learn more about Panthalia'as architecture and philosophy. 
 
-Panthalia is deployed to Vercel and leveraging Vercel's Postgres offering, but all asynchronous work is done in a "fire and forget" fashion - my API routes accept work like new posts or post edits, but kick off other API route calls to handle the long-running work such as: 
+## Why build this? 
 
-* Cloning my portfolio repository which contains my app 
-* Calling out to my StableDiffusion endpoint, which is served by Replicate
-* Saving the image files generated by Replicate to AWS S3 (which is necessary because Replicate's URLs that host generated images are only valid for 1 hour - to save on their own storage costs)
-* Re-generating images at my request - which is so far a normal part of using StableDiffusion as your image generator when building content for the web (in my experience)
-* Saving durable image URLs returned from S3 to Postgres
-* Committing the generated images I do like to my portfolio site on the same branch as the original pull request so that I can reference them from my markdown updates
-
-Together this enables a streamlined mobile-first blogging workflow resulting in high quality published posts, while allowing me to quickly stub out and start posts whenever and wherever they occur to me.
-
-I'm certainly a [Vercel convert / fanboy](https://www.zackproser.com/blog/maintaining-this-site-no-longer-fucking-sucks) but running this project in particular on Vercel introduced some interesting challenges: for example, using git for this app was core to the architecture and workflows, but you cannot install arbitrary packages on Vercel functions, such as git. I was able to leverage the excellent isomorphic-git package 
-which re-implements core git functionality in pure JavaScript that works both on the client and server. 
-
-## Why? 
-
-I get a lot of ideas for blog posts I want to write - especially if I'm out and about, walking around or doing something away from my usual laptop - which is optimized for crafting blog posts comprised of images, videos, etc. 
-
-The idea behind Panthalia is - instead of writing myself notes in markdown into my second brain in Obsidian, just to copy them out later and turn them into posts - instead just create the pull requests against my portfolio repository 
-which contains my blog. 
-
-My hope is that by lowering the friction to publish a full blog post, I can fire off the initial pull requests for my next 5 posts from my phone while waiting in line somewhere - up to and including using Stable Diffusion to generate my 
+1. I get a lot of ideas for blog posts I want to write - especially if I'm out and about, walking around or doing something away from my usual laptop - which is optimized for crafting blog posts comprised of images, videos, etc. The idea behind Panthalia is - instead of writing myself notes in markdown into my second brain in Obsidian, just to copy them out later and turn them into posts - instead just create the pull requests against my portfolio repository 
+which contains my blog. My hope is that by lowering the friction to publish a full blog post, I can fire off the initial pull requests for my next 5 posts from my phone while waiting in line somewhere - up to and including using Stable Diffusion to generate my 
 blog post images - which I've been [doing lately](https://www.zackproser.com/blog/first-see-if-youve-got-the-bug) and [really enjoying](https://www.zackproser.com/blog/i-am-joining-pinecone-io). 
+2. The usual answer: for fun and practice. I wanted to get way deeper into the latest Next.js framework, test out Vercel Postgres, and build a highly performant, fully asynchronous workflow using only serverless functions. 
 
 ## Features
 
-### Basics
-
-* ✅ Expose a responsive web / mobile app 
-* ✅ Create new blog posts by providing a title, summary, content and some optional image prompts
-* ✅ Save draft (in-progress) posts to PostgreSQL
-* ✅ Provide a form for editing in-progress posts on a mobile phone 
-* ✅ After creating a new post and pull request, the pull request URL and the branch should be saved to the post's record
-
-### AI integration 
-
-* ✅ Use a Stable Diffusion microservice (running on Replicate) for "leader image" generation, using the posts's image prompts
-* ✅ Generated images are saved to S3 for temporary storage so they can be pulled back and reviewed while editing a post
-* ✅ Generated leader images stored in S3 are saved to the images table with an associated post ID so that they can be retrieved during post editing
-* Edit form supports generating multiple images simultaneously
-* Consider training OpenAI's GPT-4 model to review the draft post to ensure it's inline with the style of my existing blog posts, which would assist in Iterating while on the go. Currently, the most interesting idea I have here is around creating a GitHub action that can 
-read my editorial comments on an open pull request and make the requested edits directly on the same branch. This could be a nice way to handle slight more complex tasks than might be comfortable to pull off in a markdown editor, such as: "Please figure out why this branch isn't 
-building successfully, resolve the imports as needed and run the tests to ensure you've fixed the issue".
-
-### Iterating on a post
-
-* ✅ The edit form should be aware of an existing branch and push any changes up on that same branch as additional commits
-* The edit form should allow re-generating or deletion of images
-* The edit form should allow for images the user is happy with to be committed and pushed on the same branch as the open pull request, so that they can be referenced in the blog post body via Next.js `<Image>`elements.
-
-### Automation 
-
-* ✅ A pull request to my personal portfolio site, whose source lives at github.com/zackproser/portfolio, is opened programmatically 
-* ✅ Pull requests that are opened are saved to the database and associated with the post they contain 
+See the [FEATURES doc for current and future features](./docs/FEATURES.md).
 
 ## Stack 
 * Next.js
 * Vercel
-
-## Getting started 
-
-Don't worry about it. 😀
+* Vercel Postgres for post content and image metadata
+* AWS S3 for image storage
 
 
