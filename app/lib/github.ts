@@ -4,6 +4,11 @@ import fs from 'fs';
 import { sql } from '@vercel/postgres';
 import { Octokit } from "octokit";
 import { RestEndpointMethodTypes } from "@octokit/plugin-rest-endpoint-methods";
+import {
+  imageSlug,
+  hyphenToCamelCase,
+  convertImagePromptToS3UploadPath
+} from '../utils/images';
 
 import Post from '../types/posts'
 import { generatePostContent } from '../utils/posts';
@@ -85,6 +90,28 @@ export async function startGitPostUpdates(post: Post) {
   }
 }
 
+interface leaderImageInfo {
+  imageImportStatement: string;
+  varName: string;
+}
+
+function getLeaderImageImportPathAndVarName(promptText: string): leaderImageInfo {
+  // Form the leader image import statement so that it can be set in the post's metadata 
+  // (thus rendering it as the hero image of the blog post)
+
+  // Generate the camelCase variable name for the leader image
+  const leaderImgVarName = hyphenToCamelCase(convertImagePromptToS3UploadPath(promptText));
+
+  const leaderImageImportStatment = promptText ? `import ${leaderImgVarName} from '@/images/${convertImagePromptToS3UploadPath(promptText)}.png'` : '';
+
+  const info: leaderImageInfo = {
+    imageImportStatement: leaderImageImportStatment,
+    varName: leaderImgVarName
+  }
+
+  return info
+}
+
 export async function updatePostWithOpenPR(updatedPost: Post) {
   console.log(`updatedPost data submitted to updatePostWithOpenPR function: %o`, updatedPost)
 
@@ -98,17 +125,22 @@ export async function updatePostWithOpenPR(updatedPost: Post) {
   // We'll always need to re-clone the repo each time due to the nature of the ephemeral 
   // serverless environment the "backend" / Vercel functions are running in 
   const cloneUrl = await cloneRepoAndCheckoutBranch(updatedPost.gitbranch, true);
-
   console.log(`cloneUrl: ${cloneUrl}`);
 
-  // Generate post content
-  const postContent = await generatePostContent(updatedPost.title, updatedPost.summary, updatedPost.content);
+  const leaderImgInfo = getLeaderImageImportPathAndVarName(updatedPost.leaderImagePrompt.text)
 
+  // Generate post content
+  const postContent = await generatePostContent(
+    updatedPost.title,
+    updatedPost.summary,
+    updatedPost.content,
+    leaderImgInfo.imageImportStatement,
+    leaderImgInfo.varName
+  );
   console.log(`postContent: ${postContent}`);
 
   // Write updated post file 
   const postFilePath = `src/pages/blog/${updatedPost.slug}.mdx`;
-
   console.log(`postFilePath: ${postFilePath}`);
 
   // Update post file in repo with new content
@@ -143,8 +175,16 @@ export async function processPost(newPost: Post) {
   const cloneUrl = await cloneRepoAndCheckoutBranch(branchName);
   console.log(`cloneUrl: ${cloneUrl}`);
 
+  const leaderImgInfo = getLeaderImageImportPathAndVarName(newPost.leaderImagePrompt.text)
+
   // Generate post content
-  const postContent = await generatePostContent(newPost.title, newPost.summary, newPost.content);
+  const postContent = await generatePostContent(
+    newPost.title,
+    newPost.summary,
+    newPost.content,
+    leaderImgInfo.imageImportStatement,
+    leaderImgInfo.varName
+  );
   console.log(`postContent: ${postContent}`);
 
   // Write post file

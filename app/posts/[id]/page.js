@@ -10,7 +10,7 @@ import Image from 'next/image'
 import panthaliaLogo from '/public/panthalia-logo-2.png'
 import Spinner from '../../utils/spinner'
 
-import { imageSlug } from '../../utils/images'
+import { hyphenToCamelCase, imageSlug } from '../../utils/images'
 
 import { useSession } from 'next-auth/react';
 import LoginButton from '../../components/login-btn'
@@ -62,25 +62,41 @@ function EditPost({ post }) {
       })
   }
 
+
+
   const toggleImages = () => {
     setShowImages(!showImages)
   }
 
   console.log(`EditPost component...:%o`, post)
 
-  console.log(`EditPost component post.leaderImagePrompt: %s`, post.leaderimageprompt.text)
-  console.log(`EditPost component post.imageprompts: %o`, post.imageprompts)
-  console.log(`EditPost component post typeof imageprompts: %s`, typeof post.imageprompts)
+  const [editing, setEditing] = useState(false);
 
   const [title, setTitle] = useState(post.title);
   const [summary, setSummary] = useState(post.summary);
   const [content, setContent] = useState(post.content);
-  const [leaderImagePrompt, setLeaderImagePrompt] = useState(post.leaderimageprompt.text);
+  const [leaderImagePrompt, setLeaderImagePrompt] = useState(post.leaderimageprompt?.text ?? '');
   const [imagePrompts, setImagePrompts] = useState(JSON.parse(post.imageprompts));
 
   const addImagePrompt = () => {
     setImagePrompts([...imagePrompts, { type: 'image', text: '' }]);
   };
+
+  const addImageToPostBody = (image) => {
+    const imgSlug = imageSlug(image)
+    const imgName = hyphenToCamelCase(imgSlug)
+    const importStatement = `import ${imgName} from '@/images/${imgSlug}.png';`
+    const renderedImageStatement = `<Image src={${imgName}} />`
+    const newContent = `${content}\n\n${importStatement}\n\n${renderedImageStatement}`
+
+    setContent(newContent)
+  }
+
+  const addNewsletterCaptureToPostBody = () => {
+    const newContent = `${content}\n\n<Newsletter /\>`
+
+    setContent(newContent)
+  }
 
   const updateImagePrompt = (index, prompt) => {
     const imagePrompt = { type: 'image', text: prompt }
@@ -90,6 +106,8 @@ function EditPost({ post }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    setEditing(true);
 
     const updatedPost = {
       title,
@@ -189,8 +207,17 @@ function EditPost({ post }) {
             Add Image Prompt
           </button>
 
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 ml-4 rounded focus:outline-none focus:shadow-outline" type="submit">
-            Update Post
+          <button
+            disabled={editing}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 ml-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+            {editing ? (
+              <>
+                <span>Updating...</span>
+                <Spinner />
+              </>
+            ) : (
+              'Update post'
+            )}
           </button>
 
           <button
@@ -211,6 +238,15 @@ function EditPost({ post }) {
         >
           {/* Show spinner if committing images */}
           {commitingImages && <Spinner />} Commit images to branch
+        </button>
+      </div>
+
+      <div>
+        <button
+          className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          onClick={addNewsletterCaptureToPostBody}
+        >
+          Add Newsletter Capture
         </button>
       </div>
 
@@ -236,6 +272,16 @@ function EditPost({ post }) {
                   >
                     {imageSlug(image.image_url)}
                   </button>
+
+                  <button
+                    className="absolute top-0 right-0 bg-green-300 hover:bg-green-400 text-white font-bold py-1 px-2 rounded"
+                    onClick={() => {
+                      addImageToPostBody(image.image_url)
+                    }}
+                  >
+                    Add image to post
+                  </button>
+
                   <button
                     className="absolute top-0 right-0 bg-red-600 hover:bg-red-800 text-white font-bold py-1 px-2 rounded"
                     onClick={() => handleDelete(image.id)}

@@ -9,13 +9,19 @@ export async function fetchPosts() {
   return data.posts;
 }
 
-export async function generatePostContent(title, summary, content, imagePrompts) {
+export async function generatePostContent(title, summary, content, leaderImageImportStatement, imageSrc) {
+
+  console.log(`generatePostContent title: ${title} summary: ${summary} content: ${content} leaderImgImport: ${leaderImageImportStatement} imageSrc: ${imageSrc}`);
+
+  // Form the leader image import statement so it can be passed in the post's metadata
 
   // The following template sets up the basic configuration for all my blog posts
   const mdx = `
 
 import { ArticleLayout } from '@/components/ArticleLayout'
 import { Newsletter } from '@/components/Newsletter'
+${leaderImageImportStatement}
+
 
 import Image from 'next/image'
 import Link from 'next/link'
@@ -25,6 +31,7 @@ export const meta = {
   date: "${new Date().toLocaleDateString()}",
   title: "${title}",
   description: "${summary}", 
+  image: ${imageSrc}
  }
 
 export default (props) => <ArticleLayout meta={meta} {...props} />

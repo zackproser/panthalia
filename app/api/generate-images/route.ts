@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
 import Replicate from "replicate";
 import { uploadImageToS3 } from '../../lib/s3';
-import slugify from 'slugify'
 import { sql } from '@vercel/postgres'
 
+import { convertImagePromptToS3UploadPath } from '../../utils/images';
+
 import { imagePrompt } from '../../types/images';
+
 
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
@@ -29,7 +31,7 @@ export async function POST(request: Request) {
   console.log(`Got output from calling replicate API: %o`, output)
   const stableDiffusionImageURL = output[0];
 
-  const s3UploadPath = slugify(prompt.text.toLowerCase().substring(0, 30))
+  const s3UploadPath = convertImagePromptToS3UploadPath(prompt.text);
   console.log(`slugified s3UploadPath: %o`, s3UploadPath)
 
   const uploadedImageS3Path = await uploadImageToS3(stableDiffusionImageURL, s3UploadPath);
