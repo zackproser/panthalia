@@ -29,6 +29,7 @@ function EditPost({ post }) {
 
   const [images, setImages] = useState([])
   const [loadingImages, setLoadingImages] = useState(true)
+  const [deletingImage, setDeletingImage] = useState(null)
   const [showImages, setShowImages] = useState(true)
   const [commitingImages, setCommitingImages] = useState(false)
 
@@ -40,8 +41,14 @@ function EditPost({ post }) {
     setLoadingImages(false)
   }, [post.id])
 
-  const handleDelete = (imageId) => {
-    fetch(`/api/images/${imageId}`, { method: 'DELETE' })
+  const handleDeleteImage = (imageId, imageUrl) => {
+    setDeletingImage(imageId)
+    console.log(`Edit post component - handleDelete is running...imageId: ${imageId}, imageUrl: ${imageUrl}`)
+    fetch(`/api/images/${imageId}`,
+      {
+        method: 'DELETE',
+        body: JSON.stringify({ imageId, imageUrl })
+      })
       .then(response => {
         if (response.ok) {
           setImages(images.filter(image => image.id !== imageId))
@@ -284,9 +291,9 @@ function EditPost({ post }) {
 
                   <button
                     className="absolute top-0 right-0 bg-red-600 hover:bg-red-800 text-white font-bold py-1 px-2 rounded"
-                    onClick={() => handleDelete(image.id)}
+                    onClick={() => handleDeleteImage(image.id, image.image_url)}
                   >
-                    Delete
+                    {(deletingImage && deletingImage === image.id) ? <> <Spinner /> Deleting... </> : 'Delete'}
                   </button>
                 </div>
               ))}
