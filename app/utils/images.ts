@@ -10,7 +10,7 @@ export function imageSlug(imageUrl: string) {
 }
 
 export function convertImagePromptToS3UploadPath(promptText: string): string {
-  return slugify(promptText.toLowerCase().substring(0, 30), { remove: /[*+~.()'"!:@]/g })
+  return slugify(promptText.toLowerCase().substring(0, 30))
 }
 
 export function hyphenToCamelCase(str: string): string {
