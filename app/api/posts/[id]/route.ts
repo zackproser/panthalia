@@ -4,7 +4,6 @@ import { NextResponse } from 'next/server';
 import { startGitPostUpdates } from '../../../lib/github';
 
 import Post from '../../../types/posts';
-import { imagePrompt } from '../../../types/images';
 
 import { getServerSession } from "next-auth/next"
 import { authOptions } from '../../../lib/auth/options';
@@ -35,7 +34,6 @@ export async function GET(request: Request, { params }: { params: { id: string }
       let postResult = result.rows[0];
       console.log(`postResult: %o`, postResult);
 
-      postResult.leaderimageprompt = JSON.parse(postResult.leaderimageprompt);
       postResult.imagePrompts = JSON.parse(postResult.imageprompts);
 
       return NextResponse.json(postResult, { status: 200 });
@@ -81,7 +79,6 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         title = ${updatedPost.title},
         summary = ${updatedPost.summary},
         content = ${updatedPost.content},
-        leaderImagePrompt = ${JSON.stringify(updatedPost.leaderImagePrompt)},
         imagePrompts = ${JSON.stringify(updatedPost.imagePrompts)}
       WHERE id = ${id}
       RETURNING *

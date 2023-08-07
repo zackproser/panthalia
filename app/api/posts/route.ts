@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     const formData = await request.json()
     console.log(`formData submitted: % o`, formData)
 
-    const { title, slug, summary, content, leaderImagePrompt, imagePrompts } = formData
+    const { title, slug, summary, content, imagePrompts } = formData
 
     // Query to insert new blog post into the database
     const result = await sql`
@@ -58,7 +58,6 @@ export async function POST(request: Request) {
       slug,
       summary,
       content,
-      leaderimageprompt,
       imageprompts,
       status
     )
@@ -67,7 +66,6 @@ export async function POST(request: Request) {
       ${slug},
       ${summary},
       ${content},
-      ${JSON.stringify(leaderImagePrompt)},
       ${JSON.stringify(imagePrompts)},
       'drafting'
     )
@@ -85,7 +83,6 @@ export async function POST(request: Request) {
       gitbranch: null,
       githubpr: null,
       leaderimageurl: null,
-      leaderImagePrompt,
       imagePrompts,
     }
 

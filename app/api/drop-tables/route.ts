@@ -17,7 +17,7 @@ export async function GET() {
   try {
     console.log('drop-tables-route hit...')
 
-    const result = await sql`DROP TABLE posts;`
+    const result = await sql`DROP TABLE POSTS CASCADE;`
     const resultImages = await sql`DROP TABLE images`;
 
     return NextResponse.json({ result, resultImages }, { status: 200 });

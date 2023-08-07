@@ -10,8 +10,6 @@ import Image from 'next/image'
 import panthaliaLogo from '/public/panthalia-logo-2.png'
 import Spinner from '../../utils/spinner'
 
-import { hyphenToCamelCase, imageSlug } from '../../utils/images'
-
 import { useSession } from 'next-auth/react';
 import LoginButton from '../../components/login-btn'
 
@@ -69,8 +67,6 @@ function EditPost({ post }) {
       })
   }
 
-
-
   const toggleImages = () => {
     setShowImages(!showImages)
   }
@@ -82,7 +78,6 @@ function EditPost({ post }) {
   const [title, setTitle] = useState(post.title);
   const [summary, setSummary] = useState(post.summary);
   const [content, setContent] = useState(post.content);
-  const [leaderImagePrompt, setLeaderImagePrompt] = useState(post.leaderimageprompt?.text ?? '');
   const [imagePrompts, setImagePrompts] = useState(JSON.parse(post.imageprompts));
 
   const addImagePrompt = () => {
@@ -90,11 +85,7 @@ function EditPost({ post }) {
   };
 
   const addImageToPostBody = (image) => {
-    const imgSlug = imageSlug(image)
-    const imgName = hyphenToCamelCase(imgSlug)
-    const importStatement = `import ${imgName} from '@/images/${imgSlug}.png';`
-    const renderedImageStatement = `<Image src={${imgName}} />`
-    const newContent = `${content}\n\n${importStatement}\n\n${renderedImageStatement}`
+    const newContent = `${content}\n\n${image.rendered}`
 
     setContent(newContent)
   }
@@ -120,7 +111,6 @@ function EditPost({ post }) {
       title,
       summary,
       content,
-      leaderImagePrompt,
       imagePrompts
     };
 
@@ -171,18 +161,6 @@ function EditPost({ post }) {
             Content:
           </label>
           <MDEditor value={content} onChange={setContent} />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700 font-bold mb-2">
-            Leader Image Prompt:
-            <input
-              type="text"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline resize-none"
-              value={leaderImagePrompt}
-              onChange={(e) => setLeaderImagePrompt(e.target.value)}
-            />
-          </label>
         </div>
 
         {imagePrompts.map((prompt, index) => (

@@ -4,11 +4,7 @@ import fs from 'fs';
 import { sql } from '@vercel/postgres';
 import { Octokit } from "octokit";
 import { RestEndpointMethodTypes } from "@octokit/plugin-rest-endpoint-methods";
-import {
-  imageSlug,
-  hyphenToCamelCase,
-  convertImagePromptToS3UploadPath
-} from '../utils/images';
+import { S3Image } from '../types/images';
 
 import Post from '../types/posts'
 import { generatePostContent } from '../utils/posts';

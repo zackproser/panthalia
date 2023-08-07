@@ -3,11 +3,10 @@ import Replicate from "replicate";
 import { uploadImageToS3 } from '../../lib/s3';
 import { sql } from '@vercel/postgres'
 
-import { convertImagePromptToS3UploadPath } from '../../utils/images';
-
-import { imagePrompt } from '../../types/images';
+import { imagePrompt, S3Image } from '../../types/images';
 
 
+// Set up Replicate API client with API token env var
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
 });
@@ -18,6 +17,8 @@ export async function POST(request: Request) {
   const prompt: imagePrompt = await request.json() as imagePrompt
 
   console.log(`generate-images prompt: %o`, prompt)
+
+  const s3Image = new S3Image({ promptText: prompt.text })
 
   const output = await replicate.run(
     "stability-ai/sdxl:2b017d9b67edd2ee1401238df49d75da53c523f36e363881e057f5dc3ed3c5b2",
@@ -31,7 +32,7 @@ export async function POST(request: Request) {
   console.log(`Got output from calling replicate API: %o`, output)
   const stableDiffusionImageURL = output[0];
 
-  const s3UploadPath = convertImagePromptToS3UploadPath(prompt.text);
+  const s3UploadPath = s3Image.getBucketObjectKey()
   console.log(`slugified s3UploadPath: %o`, s3UploadPath)
 
   const uploadedImageS3Path = await uploadImageToS3(stableDiffusionImageURL, s3UploadPath);

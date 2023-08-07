@@ -9,6 +9,5 @@ export default interface Post {
   gitbranch: string;
   githubpr: string;
   leaderimageurl: string;
-  leaderImagePrompt: imagePrompt;
   imagePrompts: imagePrompt[];
 }
