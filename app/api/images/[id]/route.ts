@@ -37,12 +37,11 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         alt: s3Image.getImageAltText(),
         rendered: s3Image.getReactRenderedImage()
       }
-
     }));
 
     console.log(`image.image_url re-mapped as strings before before being returned to frontend: %o`, images)
 
-    return NextResponse.json({ images: [] }, { status: 200 });
+    return NextResponse.json({ images }, { status: 200 });
   } catch (err) {
     return NextResponse.json({ message: 'Server error' }, { status: 500 });
   }

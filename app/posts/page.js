@@ -11,6 +11,10 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useSession } from 'next-auth/react';
+
+
+
+import Header from '../components/header'
 import LoginButton from '../components/login-btn'
 
 import "@uiw/react-md-editor/markdown-editor.css";
@@ -175,17 +179,20 @@ function NewPostForm() {
 
 export default function Home() {
   return (
-    <main className={styles.main}>
-      <div className="flex flex-wrap items-center justify-center">
-        <Image
-          src={panthaliaLogo}
-          alt="Panthalia"
-          width={350}
-          height={350}
-          className="mb-12"
-        />
-        <NewPostForm />
-      </div>
-    </main>
+    <>
+      <Header />
+      <main className={styles.main}>
+        <div className="flex flex-wrap items-center justify-center mt-12">
+          <Image
+            src={panthaliaLogo}
+            alt="Panthalia"
+            width={350}
+            height={350}
+            className="mt-4 mb-12"
+          />
+          <NewPostForm />
+        </div>
+      </main>
+    </>
   )
 }

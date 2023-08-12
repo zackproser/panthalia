@@ -11,6 +11,7 @@ import panthaliaLogo from '/public/panthalia-logo-2.png'
 import Spinner from '../../utils/spinner'
 
 import { useSession } from 'next-auth/react';
+import Header from '../../components/header'
 import LoginButton from '../../components/login-btn'
 
 import "@uiw/react-md-editor/markdown-editor.css";
@@ -255,7 +256,7 @@ function EditPost({ post }) {
                   <button
                     className="absolute top-0 left-0 bg-blue-600 hover:bg-blue-800 text-white font-bold py-1 px-2 rounded"
                   >
-                    {imageSlug(image.image_url)}
+                    {image.slug}
                   </button>
 
                   <button
@@ -324,17 +325,20 @@ export default function EditPostPage({ params }) {
   );
 
   return (
-    <main className={styles.main}>
-      <div className="w-full flex flex-wrap items-center justify-center">
-        <Image
-          src={panthaliaLogo}
-          alt="Panthalia"
-          width={350}
-          height={350}
-          className="mb-12"
-        />
-        <EditPost post={post} />
-      </div>
-    </main>
+    <>
+      <Header />
+      <main className={styles.main}>
+        <div className="w-full flex flex-wrap items-center justify-center mt-12">
+          <Image
+            src={panthaliaLogo}
+            alt="Panthalia"
+            width={350}
+            height={350}
+            className="mt-4 mb-12"
+          />
+          <EditPost post={post} />
+        </div>
+      </main>
+    </>
   );
 }

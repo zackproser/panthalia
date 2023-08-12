@@ -8,6 +8,7 @@ import Image from 'next/image';
 
 
 import LoginButton from './components/login-btn'
+import Header from './components/header'
 import PostCard from './components/PostCard';
 import Spinner from './utils/spinner'
 
@@ -51,7 +52,8 @@ export default function PostsPage() {
 
   return (
     <>
-      <div className="flex flex-col md:flex-row  md:mx-auto items-center md:w-3/4 lg:w-2/3 p-5">
+      <Header />
+      <div className="flex flex-col md:flex-row  md:mx-auto items-center md:w-3/4 lg:w-2/3 p-5 mt-12">
         {/* Logo */}
         <Image
           src="/panthalia-logo-2.png"
