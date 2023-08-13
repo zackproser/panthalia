@@ -49,10 +49,15 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
         const panthaliaImg = new PanthaliaImage({ promptText: imageRow.prompt_text });
 
+        console.log(`panthaliaImg: %o`, panthaliaImg.getImportStatement());
+
         postResult.images.push({
           id: imageRow.id,
           text: panthaliaImg.getPromptText(),
+          alt: panthaliaImg.getImageAltText(),
           image_url: panthaliaImg.getPublicUrl(),
+          image_var_name: panthaliaImg.getImageVariableName(),
+          import_statement: panthaliaImg.getImportStatement(),
           rendered: panthaliaImg.getReactRenderedImage()
         })
 
@@ -100,7 +105,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       SET 
         title = ${updatedPost.title},
         summary = ${updatedPost.summary},
-        content = ${updatedPost.content},
+        content = ${updatedPost.content}
       WHERE id = ${id}
       RETURNING *
   `;
