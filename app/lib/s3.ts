@@ -22,7 +22,7 @@ async function downloadImageFromS3(imageKey: string): Promise<void> {
       Key: imageKey
     };
 
-    const file = fs.createWriteStream(imageFilepath);
+    const file = fs.createWriteStream(imageFilepath, { flags: 'w' });
     const stream = s3.getObject(params).createReadStream();
 
     stream.on('error', reject);
