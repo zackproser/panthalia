@@ -11,6 +11,10 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useSession } from 'next-auth/react';
+
+
+
+import Header from '../components/header'
 import LoginButton from '../components/login-btn'
 
 import "@uiw/react-md-editor/markdown-editor.css";
@@ -32,16 +36,11 @@ function NewPostForm() {
   const [title, setTitle] = useState('');
   const [summary, setSummary] = useState('');
   const [content, setContent] = useState('');
-  const [leaderImagePrompt, setLeaderImagePrompt] = useState({ type: 'leader', text: '' });
-  const [imagePrompts, setImagePrompts] = useState([]);
+  const [imagePrompts, setImagePrompts] = useState([{ type: 'image', text: '' }]);
 
   const addImagePrompt = () => {
     setImagePrompts([...imagePrompts, { type: 'image', text: '' }]);
   };
-
-  const updateLeaderPrompt = (prompt) => {
-    setLeaderImagePrompt({ type: 'leader', text: prompt })
-  }
 
   const updateImagePrompt = (index, prompt) => {
     const imagePrompt = { type: 'image', text: prompt }
@@ -64,7 +63,6 @@ function NewPostForm() {
         title,
         summary,
         content,
-        leaderImagePrompt,
         imagePrompts
       })
     });
@@ -78,17 +76,18 @@ function NewPostForm() {
     // Handle response
     if (data.success) {
       // Clear form
-      setTitle('');
-      setSummary('');
-      setContent('');
-      setLeaderImagePrompt('');
-      setImagePrompts(['']);
+
+      /* setTitle('');
+       setSummary('');
+       setContent('');
+       setImagePrompts(['']);*/
 
       router.push(`/`)
 
     } else {
       //  TODO - implement error state
       // Show error message
+      console.log(`Error submitting new post form: %o`, data)
     }
   };
 
@@ -123,15 +122,6 @@ function NewPostForm() {
         <div className="flex flex-col space-y-2">
           <label className="font-semibold text-lg">Content:</label>
           <MDEditor value={content} onChange={setContent} />
-        </div>
-        <div className="flex flex-col space-y-2">
-          <label className="font-semibold text-lg">Leader Image Prompt:</label>
-          <input
-            type="text"
-            value={leaderImagePrompt.text}
-            onChange={(e) => updateLeaderPrompt(e.target.value)}
-            className="p-2 border rounded"
-          />
         </div>
         {imagePrompts.map((prompt, index) => (
           <div key={index} className="flex flex-col space-y-2">
@@ -189,17 +179,20 @@ function NewPostForm() {
 
 export default function Home() {
   return (
-    <main className={styles.main}>
-      <div className="flex flex-wrap items-center justify-center">
-        <Image
-          src={panthaliaLogo}
-          alt="Panthalia"
-          width={350}
-          height={350}
-          className="mb-12"
-        />
-        <NewPostForm />
-      </div>
-    </main>
+    <>
+      <Header />
+      <main className={styles.main}>
+        <div className="flex flex-wrap items-center justify-center mt-12">
+          <Image
+            src={panthaliaLogo}
+            alt="Panthalia"
+            width={350}
+            height={350}
+            className="mt-4 mb-12"
+          />
+          <NewPostForm />
+        </div>
+      </main>
+    </>
   )
 }

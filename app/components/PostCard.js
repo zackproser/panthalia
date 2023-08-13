@@ -58,7 +58,7 @@ export default function PostCard({ post, deletePost }) {
   }
 
   return (
-    <div className="w-80 h-80 mx-auto bg-amber-100 rounded-xl shadow-md overflow-hidden md:max-w-2xl">
+    <div className="w-80 h-90 mx-auto bg-amber-100 rounded-xl shadow-md overflow-hidden md:max-w-2xl">
       <div className="flex flex-col h-full p-4">
         <div>
           <Link href={`/posts/${post.id}`} className="block mt-1 text-lg leading-tight font-bold text-slate-900 hover:underline">

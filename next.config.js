@@ -3,7 +3,8 @@ const nextConfig = {
   images: {
     domains: [
       'picsum.photos',
-      'panthalia-images.s3.amazonaws.com'
+      'panthalia-images.s3.amazonaws.com',
+      's3.amazonaws.com'
     ],
   },
   transpilePackages: ['react-md-editor']

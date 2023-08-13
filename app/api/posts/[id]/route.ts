@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 import { startGitPostUpdates } from '../../../lib/github';
 
 import Post from '../../../types/posts';
-import { imagePrompt } from '../../../types/images';
+import { PanthaliaImage } from '../../../types/images';
 
 import { getServerSession } from "next-auth/next"
 import { authOptions } from '../../../lib/auth/options';
@@ -31,12 +31,32 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
       console.log(`fetched post from DB: %o`, result.rows[0]);
 
-      // Unstringify the image prompt fields 
-      let postResult = result.rows[0];
+      let postResult = result.rows[0] as any
       console.log(`postResult: %o`, postResult);
 
-      postResult.leaderimageprompt = JSON.parse(postResult.leaderimageprompt);
-      postResult.imagePrompts = JSON.parse(postResult.imageprompts);
+      // Get all images for the given post
+      const imagesResult = await sql`
+        SELECT *
+        FROM images
+        WHERE post_id = ${id}
+      `;
+
+      console.log(`imagesResult: %o`, imagesResult);
+
+      postResult.images = []
+
+      imagesResult.rows.map((imageRow) => {
+
+        const panthaliaImg = new PanthaliaImage({ promptText: imageRow.prompt_text });
+
+        postResult.images.push({
+          id: imageRow.id,
+          text: panthaliaImg.getPromptText(),
+          image_url: panthaliaImg.getPublicUrl(),
+          rendered: panthaliaImg.getReactRenderedImage()
+        })
+
+      })
 
       return NextResponse.json(postResult, { status: 200 });
 
@@ -81,8 +101,6 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         title = ${updatedPost.title},
         summary = ${updatedPost.summary},
         content = ${updatedPost.content},
-        leaderImagePrompt = ${JSON.stringify(updatedPost.leaderImagePrompt)},
-        imagePrompts = ${JSON.stringify(updatedPost.imagePrompts)}
       WHERE id = ${id}
       RETURNING *
   `;

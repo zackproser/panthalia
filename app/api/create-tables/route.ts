@@ -19,7 +19,7 @@ export async function GET(request: Request) {
         }
 
         const result = await sql`
-          CREATE TABLE posts (
+          CREATE TABLE IF NOT EXISTS POSTS (
               id SERIAL PRIMARY KEY, 
               title TEXT, 
               slug TEXT,
@@ -27,10 +27,6 @@ export async function GET(request: Request) {
               content TEXT, 
               status VARCHAR(50) CHECK (status IN ('drafting', 'review', 'published')), 
               githubpr TEXT, 
-              vercelpreviewurl TEXT, 
-              leaderimageurl TEXT,
-              leaderimageprompt TEXT, 
-              imageprompts TEXT, 
               gitbranch TEXT,
               createdat TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, 
               updatedat TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -53,11 +49,7 @@ export async function GET(request: Request) {
                     summary, 
                     content, 
                     status, 
-                    githubpr, 
-                    vercelpreviewurl, 
-                    leaderimageurl,
-                    leaderimageprompt, 
-                    imageprompts
+                    githubpr
                 ) 
                 VALUES 
                 (
@@ -66,23 +58,15 @@ export async function GET(request: Request) {
                     'A deep dive into the impacts of AI in our daily lives.', 
                     'Content for the blog post goes here...', 
                     'drafting', 
-                    'https://github.com/user/repo/pull/1', 
-                    'https://vercel.app/preview/1', 
-                    'https://picsum.photos/500',
-                    'a leader image that is good', 
-                    '["image prompt 1", "image prompt 2", "image prompt 3"]'
+                    'https://github.com/user/repo/pull/1'
                 ), 
                 (
                     'Introduction to Quantum Computing', 
                     'introduction-to-quantum-computing',
                     'A beginner-friendly introduction to the concepts of quantum computing.', 
                     'Content for the blog post goes here...', 
-                    'review', 
-                    'https://github.com/user/repo/pull/2', 
-                    'https://vercel.app/preview/2', 
-                    'https://picsum.photos/500',
-                    'a robot leader image', 
-                    '["image prompt 4", "image prompt 5", "image prompt 6"]'
+                    'drafting', 
+                    'https://github.com/user/repo/pull/2'
                 ), 
                 (
                     'Understanding Machine Learning', 
@@ -90,11 +74,7 @@ export async function GET(request: Request) {
                     'Breaking down the basics of Machine Learning and its applications.', 
                     'Content for the blog post goes here...', 
                     'published', 
-                    'https://github.com/user/repo/pull/3', 
-                    'https://vercel.app/preview/3', 
-                    'https://picsum.photos/500',
-                    'a fluffy dog leader image', 
-                    '["image prompt 7", "image prompt 8", "image prompt 9"]'
+                    'https://github.com/user/repo/pull/3'
                 );
               `
             console.log(`Result of seedPostsTableStatement: % o`, seedDbResult)
@@ -103,9 +83,11 @@ export async function GET(request: Request) {
         // Create the images table 
         const imageTableResult = await sql`
             CREATE TABLE images (
-                id SERIAL PRIMARY KEY,
-                post_id INTEGER REFERENCES posts(id) ON DELETE CASCADE,
-                image_url TEXT NOT NULL
+              id SERIAL PRIMARY KEY,
+              post_id INTEGER REFERENCES posts(id) ON DELETE CASCADE,  
+              prompt_text TEXT,
+              error TEXT,
+              image_url TEXT 
             );
         `
 
@@ -115,6 +97,7 @@ export async function GET(request: Request) {
 
     } catch (error) {
 
+        console.log(`Error creating tables: %o`, error)
         console.dir(error)
 
         return NextResponse.json({ error }, { status: 500 });

@@ -1,30 +1,35 @@
-import Post from '../types/posts'
-
+import { sql } from '@vercel/postgres';
 import { imagePrompt } from '../types/images'
 
-export async function startImageGeneration(post: Post) {
+const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
 
-  console.log(`startImageGeneration: %o`, post);
+export async function startImageGeneration(postId: number) {
 
-  const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+  console.log(`startImageGeneration function hit with postId: %o`, postId);
+  // Get post ID and use it to look up all of the images associated with the post that don't have: 
+  // 1. an S3 URL associated with them
+  // 2. an error associated with them which means they may have already been rejected as a prompt by the 
+  // Replicate endpoint
+  const imagesResult = await sql`
+    SELECT *
+    FROM images
+    WHERE post_id = ${postId}
+    AND image_url IS NULL
+    AND error IS NULL
+  `
+
+  console.log(`startImageGeneration: select images result %o`, imagesResult);
+
 
   // Set up the structured image requests for the image generation backend
   let imagePrompts: imagePrompt[] = []
 
-  if (post.leaderImagePrompt.text.trim() !== "") {
-    imagePrompts.push({
-      postId: post.id,
-      text: post.leaderImagePrompt.text,
-      type: "leader"
-    })
-  }
-
-  for (const prompt of post.imagePrompts) {
-    if (prompt.text.trim() !== "") {
+  for (const image of imagesResult.rows) {
+    if (image.prompt_text.trim() !== "") {
       imagePrompts.push({
-        postId: post.id,
-        text: prompt.text,
-        type: "image"
+        imageId: image.id,
+        postId: postId,
+        text: image.prompt_text,
       })
     }
   }
@@ -32,9 +37,6 @@ export async function startImageGeneration(post: Post) {
   console.log(`startImageGeneration processed the following image prompts to request from StableDiffusion: %o`, imagePrompts);
 
   // For each image prompt, generate an image via the image generation endpoint 
-  // There are two image types: leaderimage and image - leaderimage gets associated with the post
-  // metadata and rendered on the blog post index page, whereas images are just generated, stored in the images 
-  // table and associated with the post via post id
   for (const prompt of imagePrompts) {
     console.log(`startImageGeneration requesting image prompt: %o`, prompt);
 
