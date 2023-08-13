@@ -1,22 +1,35 @@
-import Post from '../types/posts'
-
+import { sql } from '@vercel/postgres';
 import { imagePrompt } from '../types/images'
 
-export async function startImageGeneration(post: Post) {
+const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
 
-  console.log(`startImageGeneration: %o`, post);
+export async function startImageGeneration(postId: number) {
 
-  const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+  console.log(`startImageGeneration function hit with postId: %o`, postId);
+  // Get post ID and use it to look up all of the images associated with the post that don't have: 
+  // 1. an S3 URL associated with them
+  // 2. an error associated with them which means they may have already been rejected as a prompt by the 
+  // Replicate endpoint
+  const imagesResult = await sql`
+    SELECT *
+    FROM images
+    WHERE post_id = ${postId}
+    AND image_url IS NULL
+    AND error IS NULL
+  `
+
+  console.log(`startImageGeneration: select images result %o`, imagesResult);
+
 
   // Set up the structured image requests for the image generation backend
   let imagePrompts: imagePrompt[] = []
 
-  for (const prompt of post.imagePrompts) {
-    if (prompt.text.trim() !== "") {
+  for (const image of imagesResult.rows) {
+    if (image.prompt_text.trim() !== "") {
       imagePrompts.push({
-        postId: post.id,
-        text: prompt.text,
-        type: prompt.type,
+        imageId: image.id,
+        postId: postId,
+        text: image.prompt_text,
       })
     }
   }

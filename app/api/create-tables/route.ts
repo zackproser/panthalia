@@ -27,7 +27,6 @@ export async function GET(request: Request) {
               content TEXT, 
               status VARCHAR(50) CHECK (status IN ('drafting', 'review', 'published')), 
               githubpr TEXT, 
-              imageprompts TEXT, 
               gitbranch TEXT,
               createdat TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, 
               updatedat TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -50,8 +49,7 @@ export async function GET(request: Request) {
                     summary, 
                     content, 
                     status, 
-                    githubpr, 
-                    imageprompts
+                    githubpr
                 ) 
                 VALUES 
                 (
@@ -60,8 +58,7 @@ export async function GET(request: Request) {
                     'A deep dive into the impacts of AI in our daily lives.', 
                     'Content for the blog post goes here...', 
                     'drafting', 
-                    'https://github.com/user/repo/pull/1', 
-                    '[{"type": "leader", "text": "image prompt 1"}]'
+                    'https://github.com/user/repo/pull/1'
                 ), 
                 (
                     'Introduction to Quantum Computing', 
@@ -69,8 +66,7 @@ export async function GET(request: Request) {
                     'A beginner-friendly introduction to the concepts of quantum computing.', 
                     'Content for the blog post goes here...', 
                     'drafting', 
-                    'https://github.com/user/repo/pull/2', 
-                    '[{"type": "leader", "text": "image prompt 1"}]'
+                    'https://github.com/user/repo/pull/2'
                 ), 
                 (
                     'Understanding Machine Learning', 
@@ -78,8 +74,7 @@ export async function GET(request: Request) {
                     'Breaking down the basics of Machine Learning and its applications.', 
                     'Content for the blog post goes here...', 
                     'published', 
-                    'https://github.com/user/repo/pull/3', 
-                    '[{"type": "leader", "text": "image prompt 1"}, {"type": "image", "text": "image prompt 1"}]'
+                    'https://github.com/user/repo/pull/3'
                 );
               `
             console.log(`Result of seedPostsTableStatement: % o`, seedDbResult)
@@ -87,10 +82,12 @@ export async function GET(request: Request) {
 
         // Create the images table 
         const imageTableResult = await sql`
-            CREATE TABLE IF NOT EXISTS IMAGES (
-                id SERIAL PRIMARY KEY,
-                post_id INTEGER REFERENCES posts(id) ON DELETE CASCADE,
-                image_url TEXT NOT NULL
+            CREATE TABLE images (
+              id SERIAL PRIMARY KEY,
+              post_id INTEGER REFERENCES posts(id) ON DELETE CASCADE,  
+              prompt_text TEXT,
+              error TEXT,
+              image_url TEXT 
             );
         `
 

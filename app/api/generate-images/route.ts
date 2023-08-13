@@ -3,8 +3,7 @@ import Replicate from "replicate";
 import { uploadImageToS3 } from '../../lib/s3';
 import { sql } from '@vercel/postgres'
 
-import { imagePrompt, S3Image } from '../../types/images';
-
+import { imagePrompt, PanthaliaImage } from '../../types/images';
 
 // Set up Replicate API client with API token env var
 const replicate = new Replicate({
@@ -18,42 +17,47 @@ export async function POST(request: Request) {
 
   console.log(`generate-images prompt: %o`, prompt)
 
-  const s3Image = new S3Image({ promptText: prompt.text })
+  const panthaliaImg = new PanthaliaImage({ promptText: prompt.text })
 
   const output = await replicate.run(
     "stability-ai/sdxl:2b017d9b67edd2ee1401238df49d75da53c523f36e363881e057f5dc3ed3c5b2",
     {
       input: {
-        prompt: prompt.text
+        prompt: panthaliaImg.getPromptText(),
       }
     }
   );
 
   console.log(`Got output from calling replicate API: %o`, output)
-  const stableDiffusionImageURL = output[0];
+  const stableDiffusionImageURL = (Array.isArray(output) && output.length > 0) ? output[0] : undefined
 
-  const s3UploadPath = s3Image.getBucketObjectKey()
-  console.log(`slugified s3UploadPath: %o`, s3UploadPath)
+  if (typeof stableDiffusionImageURL !== undefined) {
+    const s3UploadPath = panthaliaImg.getBucketObjectKey()
+    console.log(`slugified s3UploadPath: %o`, s3UploadPath)
 
-  const uploadedImageS3Path = await uploadImageToS3(stableDiffusionImageURL, s3UploadPath);
+    const uploadedImageS3Path = await uploadImageToS3(stableDiffusionImageURL, s3UploadPath);
 
-  // Save the S3 image to the posts table to associate it with the current Post
-  const result = await sql`
-    INSERT INTO images 
-      (image_url, post_id) 
-    VALUES (${uploadedImageS3Path}, ${prompt.postId}) 
-  `
+    // Update the image in the images table with the latest image_url value  
+    const result = await sql`
+      UPDATE images 
+      SET image_url = ${uploadedImageS3Path}
+          post_id = ${prompt.postId}, 
+      WHERE id = ${prompt.imageId}
+    `
+    console.log(`Result of saving S3 image URL to images table: %o for post_id: ${prompt.postId}`, result)
+  } else {
+    // Otherwise, the image generation failed for some reason - so we don't save anything to S3 and we don't have 
+    // anything new to save to the images table - we also want to update the image as having had an error 
+    // so that we can render the failed image generation prompt on the edit post page 
+    const errorText = `Error generating image via prompt: ${prompt.text}`
 
-  console.log(`Result of storing new image in posts table: %o`, result)
+    const errorResult = await sql`
+      UPDATE posts
+      SET error = ${errorText}
+      WHERE id = ${prompt.postId}
+    `
 
-  // If the prompt is of type leader image, then save it in the posts table's leaderimageprompt column
-  if (prompt.type === "leader") {
-    const postUpdateResult = await sql`
-    UPDATE posts
-    SET leaderimageurl = ${uploadedImageS3Path}
-    WHERE id = ${prompt.postId}
-  `
-    console.log(`Result of updating posts table: %o`, postUpdateResult)
+    console.log(`Result of updating error text for post_id: ${prompt.postId}`, errorResult)
   }
 
   return NextResponse.json({

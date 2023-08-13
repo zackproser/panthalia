@@ -36,7 +36,7 @@ function EditPost({ post }) {
     console.log(`useEffect is running..`)
     fetch(`/api/images/${post.id}`)
       .then(response => response.json())
-      .then(data => setImages(data.images))
+      .then(data => { console.dir(data.images); setImages(data.images) })
     setLoadingImages(false)
   }, [post.id])
 
@@ -79,14 +79,14 @@ function EditPost({ post }) {
   const [title, setTitle] = useState(post.title);
   const [summary, setSummary] = useState(post.summary);
   const [content, setContent] = useState(post.content);
-  const [imagePrompts, setImagePrompts] = useState(JSON.parse(post.imageprompts));
+  const [imagePrompts, setImagePrompts] = useState([]);
 
   const addImagePrompt = () => {
     setImagePrompts([...imagePrompts, { type: 'image', text: '' }]);
   };
 
-  const addImageToPostBody = (image) => {
-    const newContent = `${content}\n\n${image.rendered}`
+  const addImageToPostBody = (renderedImportStatement) => {
+    const newContent = `${content}\n\n${renderedImportStatement}`
 
     setContent(newContent)
   }
@@ -244,7 +244,7 @@ function EditPost({ post }) {
           <hr className="w-148 h-1 mx-auto my-4 bg-gray-100 border-0 rounded md:my-10 dark:bg-gray-700"></hr>
           <div>
             <div className="grid grid-cols-3 gap-4">
-              {images.map(image => (
+              {(images.length > 0) && images.map(image => (
                 <div key={image.id} className="relative">
                   <Image
                     className="object-cover w-full rounded-md"
@@ -262,7 +262,7 @@ function EditPost({ post }) {
                   <button
                     className="absolute top-0 right-0 bg-green-300 hover:bg-green-400 text-white font-bold py-1 px-2 rounded"
                     onClick={() => {
-                      addImageToPostBody(image.image_url)
+                      addImageToPostBody(image.rendered)
                     }}
                   >
                     Add image to post
@@ -306,6 +306,7 @@ export default function EditPostPage({ params }) {
 
     getPost()
   }, [id])
+
 
   if (!session) {
     return (

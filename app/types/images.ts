@@ -1,12 +1,10 @@
 export interface imagePrompt {
+  imageId: number;
   postId: number;
   text: string,
-  // The type is a string that can either be "leader" or "image"                              
-  type: "leader" | "image"
 }
 
-
-type S3ImageConstructorOptions = {
+type PanthaliaImageConstructorOptions = {
   promptText?: string;
   url?: URL;
 };
@@ -14,7 +12,7 @@ type S3ImageConstructorOptions = {
 /* Usage:
  *
 const promptText = "A banana robbing a bank at gunpoint, pixel art"
-const myImage = new S3Image(promptText);
+const myImage = new PanthaliaImage(promptText);
 myImage.generateKeyFromPrompt("User's Text Input With Some !Special? Characters.");
 
 console.log(myImage.getPublicUrl());      // Fetch the public URL.
@@ -22,19 +20,42 @@ console.log(myImage.getBucketObjectKey()); // Fetch the bucket object key.
 console.log(myImage.getLocalFilePath());  // Fetch the local file path.
 console.log(myImage.getVariableName());   // Fetch the variable name for imports.
 */
-export class S3Image {
+export class PanthaliaImage {
+  private promptText: string;
   private key: string;
   private baseUrl: string = `https://s3.amazonaws.com/${process.env.S3_BUCKET_NAME}`;
   private localPathRoot: string = '/src/images/';
+  private error: Error = null;
 
-  constructor(options: S3ImageConstructorOptions) {
+  constructor(options: PanthaliaImageConstructorOptions) {
     if (options.promptText) {
       this.generateKeyFromPrompt(options.promptText);
+      this.setPromptText(options.promptText);
     } else if (options.url) {
       this.generateKeyFromUrl(options.url);
     } else {
       throw new Error("Invalid input provided.");
     }
+  }
+
+  setPromptText(promptText: string) {
+    this.promptText = promptText
+  }
+
+  getPromptText(): string {
+    return this.promptText
+  }
+
+  setError(error: Error) {
+    this.error = error
+  }
+
+  getError(): Error {
+    return this.error
+  }
+
+  hasError(): Boolean {
+    return this.error !== null
   }
 
   generateKeyFromUrl(url: URL) {

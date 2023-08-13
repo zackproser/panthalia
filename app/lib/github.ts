@@ -4,7 +4,7 @@ import fs from 'fs';
 import { sql } from '@vercel/postgres';
 import { Octokit } from "octokit";
 import { RestEndpointMethodTypes } from "@octokit/plugin-rest-endpoint-methods";
-import { S3Image } from '../types/images';
+import { PanthaliaImage } from '../types/images';
 
 import Post from '../types/posts'
 import { generatePostContent } from '../utils/posts';
@@ -86,28 +86,6 @@ export async function startGitPostUpdates(post: Post) {
   }
 }
 
-interface leaderImageInfo {
-  imageImportStatement: string;
-  varName: string;
-}
-
-function getLeaderImageImportPathAndVarName(promptText: string): leaderImageInfo {
-  // Form the leader image import statement so that it can be set in the post's metadata 
-  // (thus rendering it as the hero image of the blog post)
-
-  // Generate the camelCase variable name for the leader image
-  const leaderImgVarName = hyphenToCamelCase(convertImagePromptToS3UploadPath(promptText));
-
-  const leaderImageImportStatment = promptText ? `import ${leaderImgVarName} from '@/images/${convertImagePromptToS3UploadPath(promptText)}.png'` : '';
-
-  const info: leaderImageInfo = {
-    imageImportStatement: leaderImageImportStatment,
-    varName: leaderImgVarName
-  }
-
-  return info
-}
-
 export async function updatePostWithOpenPR(updatedPost: Post) {
   console.log(`updatedPost data submitted to updatePostWithOpenPR function: %o`, updatedPost)
 
@@ -123,15 +101,35 @@ export async function updatePostWithOpenPR(updatedPost: Post) {
   const cloneUrl = await cloneRepoAndCheckoutBranch(updatedPost.gitbranch, true);
   console.log(`cloneUrl: ${cloneUrl}`);
 
-  const leaderImgInfo = getLeaderImageImportPathAndVarName(updatedPost.leaderImagePrompt.text)
+  // If the post has at least one image, use the image as the leader image which will render on the blog index page
+  const imagesResult = await sql`
+    select * from images 
+    where post_id = ${updatedPost.id}
+    and error IS NULL 
+  `
+
+  let leaderImgImportStatement = '';
+  let leaderImgVarName = '';
+
+  if (imagesResult.rows.length > 0) {
+    // Get the first image 
+    const promptText = imagesResult.rows.shift().prompt_text
+
+    const panthaliaImg = new PanthaliaImage({ promptText });
+
+    // Generate the camelCase variable name for the leader image
+    leaderImgVarName = panthaliaImg.getImageVariableName();
+    leaderImgImportStatement = panthaliaImg.getImportStatement();
+  }
 
   // Generate post content
   const postContent = await generatePostContent(
     updatedPost.title,
     updatedPost.summary,
     updatedPost.content,
-    leaderImgInfo.imageImportStatement,
-    leaderImgInfo.varName
+    leaderImgImportStatement,
+    leaderImgVarName
+
   );
   console.log(`postContent: ${postContent}`);
 
@@ -237,9 +235,4 @@ export async function createPullRequest(title: string, head: string, base: strin
     console.log(`createPullRequest error: %o`, error);
   }
 }
-
-
-
-
-
 
