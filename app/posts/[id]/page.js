@@ -85,9 +85,19 @@ function EditPost({ post }) {
     setImagePrompts([...imagePrompts, { type: 'image', text: '' }]);
   };
 
-  const addImageToPostBody = (renderedImportStatement) => {
-    const newContent = `${content}\n\n${renderedImportStatement}`
-
+  const addImageToPostBody = (importStatement, nextImageStatement) => {
+    console.log(`addImageToPostBody: importStatement: ${importStatement}, nextImageStatement: ${nextImageStatement}`)
+    // If the image variable has already been imported in the post body, don't import it again, 
+    // just render the image link the body of the content 
+    let newContent = ''
+    if (content.includes(importStatement)) {
+      console.log(`The image has already been imported in the post body.`)
+      newContent = `${content}\n\n${nextImageStatement}`
+    } else {
+      console.log(`The image has not been imported in the post body. including import statement`)
+      newContent = `${content}\n\n${importStatement}\n\n${nextImageStatement}`
+    }
+    console.log(`newContent: ${newContent}`)
     setContent(newContent)
   }
 
@@ -237,10 +247,11 @@ function EditPost({ post }) {
       </div>
 
 
+      {(loadingImages && <span><Spinner /> Loading images...</span>)}
+
       {showImages && (
         <div className="mt-4">
           {/* Show images */}
-          {(loadingImages && <span><Spinner /> Loading images...</span>)}
           <hr className="w-148 h-1 mx-auto my-4 bg-gray-100 border-0 rounded md:my-10 dark:bg-gray-700"></hr>
           <div>
             <div className="grid grid-cols-3 gap-4">
@@ -262,7 +273,7 @@ function EditPost({ post }) {
                   <button
                     className="absolute top-0 right-0 bg-green-300 hover:bg-green-400 text-white font-bold py-1 px-2 rounded"
                     onClick={() => {
-                      addImageToPostBody(image.rendered)
+                      addImageToPostBody(image.import_statement, image.rendered)
                     }}
                   >
                     Add image to post

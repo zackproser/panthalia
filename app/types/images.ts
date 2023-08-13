@@ -58,6 +58,10 @@ export class PanthaliaImage {
     return this.error !== null
   }
 
+  toCamelCase(str: string): string {
+    return str.replace(/-([a-z])/g, function(g) { return g[1].toUpperCase(); });
+  }
+
   generateKeyFromUrl(url: URL) {
     this.key = new URL(url).pathname.substring(1);
   }
@@ -94,7 +98,7 @@ export class PanthaliaImage {
   }
 
   getImageVariableName(): string {
-    return `${this.key}Image`;
+    return `${this.toCamelCase(this.key)}Image`;
   }
 
   getImportStatement(): string {
@@ -102,8 +106,7 @@ export class PanthaliaImage {
   }
 
   getReactRenderedImage(): string {
-    const importStatement = this.getImportStatement();
-    return `${importStatement}\n\n<Image src={${this.getImageVariableName()}}/>}`
+    return `<Image src={${this.getImageVariableName()}}/>`
   }
 }
 

@@ -40,8 +40,8 @@ export async function POST(request: Request) {
     // Update the image in the images table with the latest image_url value  
     const result = await sql`
       UPDATE images 
-      SET image_url = ${uploadedImageS3Path}
-          post_id = ${prompt.postId}, 
+      SET image_url = ${uploadedImageS3Path},
+          post_id = ${prompt.postId}
       WHERE id = ${prompt.imageId}
     `
     console.log(`Result of saving S3 image URL to images table: %o for post_id: ${prompt.postId}`, result)

@@ -40,9 +40,12 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
       return {
         id: row.id,
-        image_url: panthaliaImg.getPublicUrl(),
-        slug: panthaliaImg.getBucketObjectKey(),
+        text: panthaliaImg.getPromptText(),
         alt: panthaliaImg.getImageAltText(),
+        image_url: panthaliaImg.getPublicUrl(),
+        image_var_name: panthaliaImg.getImageVariableName(),
+        import_statement: panthaliaImg.getImportStatement(),
+        slug: panthaliaImg.getBucketObjectKey(),
         rendered: panthaliaImg.getReactRenderedImage()
       }
     }));

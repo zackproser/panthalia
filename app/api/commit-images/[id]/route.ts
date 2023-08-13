@@ -30,12 +30,20 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     // Fetch images for post
     // // 
     const result = await sql`
-      SELECT * 
-        FROM images 
+      SELECT image_url 
+      FROM images 
       WHERE post_id = ${postId}
+      AND image_url IS NOT NULL 
     `;
 
-    const imageUrls = result.rows.map((image => image.image_url))
+    console.log(`result: %o`, result)
+    console.log(`result.rows: %o`, result.rows)
+
+    let imageUrls: string[] = [];
+
+    result.rows.map((row) => {
+      imageUrls.push(row.image_url ?? '');
+    })
 
     console.log(`imageUrls prior to downloading from S3: ${imageUrls}`)
 
