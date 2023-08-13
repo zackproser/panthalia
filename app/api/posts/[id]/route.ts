@@ -101,7 +101,6 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         title = ${updatedPost.title},
         summary = ${updatedPost.summary},
         content = ${updatedPost.content},
-        imagePrompts = ${JSON.stringify(updatedPost.imagePrompts)}
       WHERE id = ${id}
       RETURNING *
   `;

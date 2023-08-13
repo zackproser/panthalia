@@ -169,15 +169,35 @@ export async function processPost(newPost: Post) {
   const cloneUrl = await cloneRepoAndCheckoutBranch(branchName);
   console.log(`cloneUrl: ${cloneUrl}`);
 
-  const leaderImgInfo = getLeaderImageImportPathAndVarName(newPost.leaderImagePrompt.text)
+  // If the post has at least one image, use the image as the leader image which will render on the blog index page
+  const imagesResult = await sql`
+    select * from images 
+    where post_id = ${newPost.id}
+    and error IS NULL 
+  `
+
+  let leaderImgImportStatement = '';
+  let leaderImgVarName = '';
+
+  if (imagesResult.rows.length > 0) {
+    // Get the first image 
+    const promptText = imagesResult.rows.shift().prompt_text
+
+    const panthaliaImg = new PanthaliaImage({ promptText });
+
+    // Generate the camelCase variable name for the leader image
+    leaderImgVarName = panthaliaImg.getImageVariableName();
+    leaderImgImportStatement = panthaliaImg.getImportStatement();
+  }
 
   // Generate post content
   const postContent = await generatePostContent(
     newPost.title,
     newPost.summary,
     newPost.content,
-    leaderImgInfo.imageImportStatement,
-    leaderImgInfo.varName
+    leaderImgImportStatement,
+    leaderImgVarName
+
   );
   console.log(`postContent: ${postContent}`);
 
@@ -207,7 +227,6 @@ export async function processPost(newPost: Post) {
     `
 
   console.log(`Result of updating post with githuburl: %o`, addPrResult);
-
   return
 }
 
