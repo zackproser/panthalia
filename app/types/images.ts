@@ -94,7 +94,13 @@ export class PanthaliaImage {
 
   // Get the local file path.
   getLocalFilePath(): string {
-    return `${this.localPathRoot}${this.key}.png`;
+    let localFilePath = `${this.localPathRoot}${this.key}`;
+    const fileExtension = `.png`
+    // If last character is a hyphen, remove it.
+    if (localFilePath[localFilePath.length - 1] === '-') {
+      localFilePath = localFilePath.substring(0, localFilePath.length - 1);
+    }
+    return `${localFilePath}${fileExtension}`;
   }
 
   getImageVariableName(): string {

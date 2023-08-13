@@ -66,7 +66,12 @@ export default function PostCard({ post, deletePost }) {
           </Link>
 
           <div className="flex items-center p-3">
-            <Image src={post.leaderimageurl ?? 'https://picsum.photos/200/300'} width={75} height={75} />
+            <Image
+              src={post.leaderimageurl ?? 'https://picsum.photos/200/300'}
+              width={75}
+              height={75}
+              alt={post.title}
+            />
           </div>
 
           <p className="mt-2 text-slate-800">{truncate(post.summary, 50)}</p>
@@ -83,8 +88,8 @@ export default function PostCard({ post, deletePost }) {
                 className="text-white"
                 href={post.githubpr}>
                 <div className="inline-flex items-center bg-green-500 rounded px-1 py-1">
-                  <Image src={"/octocat.svg"} width={24} height={24} />
-                  <Image className="fill-current text-white" src={"/github-pr.svg"} width={24} height={24} />
+                  <Image src={"/octocat.svg"} width={24} height={24} alt="octocat" />
+                  <Image className="fill-current text-white" src={"/github-pr.svg"} width={24} height={24} alt="github-pr" />
                 </div>
               </Link>
             )}

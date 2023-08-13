@@ -9,6 +9,7 @@ import Image from 'next/image'
 
 import panthaliaLogo from '/public/panthalia-logo-2.png'
 import Spinner from '../../utils/spinner'
+import ReloadIcon from '../../utils/reload-icon';
 
 import { useSession } from 'next-auth/react';
 import Header from '../../components/header'
@@ -36,7 +37,10 @@ function EditPost({ post }) {
     console.log(`useEffect is running..`)
     fetch(`/api/images/${post.id}`)
       .then(response => response.json())
-      .then(data => { console.dir(data.images); setImages(data.images) })
+      .then(data => {
+        console.log(`EditPost get /api/images${post.id}: %o`, data);
+        setImages(data.images)
+      })
     setLoadingImages(false)
   }, [post.id])
 
@@ -79,10 +83,9 @@ function EditPost({ post }) {
   const [title, setTitle] = useState(post.title);
   const [summary, setSummary] = useState(post.summary);
   const [content, setContent] = useState(post.content);
-  const [imagePrompts, setImagePrompts] = useState([]);
 
   const addImagePrompt = () => {
-    setImagePrompts([...imagePrompts, { type: 'image', text: '' }]);
+    setImages([...images, { text: '' }]);
   };
 
   const addImageToPostBody = (importStatement, nextImageStatement) => {
@@ -94,35 +97,41 @@ function EditPost({ post }) {
       console.log(`The image has already been imported in the post body.`)
       newContent = `${content}\n\n${nextImageStatement}`
     } else {
-      console.log(`The image has not been imported in the post body. including import statement`)
-      newContent = `${content}\n\n${importStatement}\n\n${nextImageStatement}`
+      console.log(`The image has not been imported in the post body.including import statement`)
+      newContent = `${content} \n\n${importStatement} \n\n${nextImageStatement} `
     }
-    console.log(`newContent: ${newContent}`)
+    console.log(`newContent: ${newContent} `)
     setContent(newContent)
   }
 
   const addNewsletterCaptureToPostBody = () => {
-    const newContent = `${content}\n\n<Newsletter /\>`
+    const newContent = `${content} \n\n < Newsletter /\> `
 
     setContent(newContent)
   }
 
   const updateImagePrompt = (index, prompt) => {
-    const imagePrompt = { type: 'image', text: prompt }
-    imagePrompts[index] = imagePrompt
-    setImagePrompts([...imagePrompts])
+    const imagePrompt = { text: prompt }
+    setImages([...images, imagePrompt]);
   };
+
+  const deleteImagePrompt = (index, prompt) => {
+    // delete the image prompt identified by the current index
+    setImages([...images.slice(0, index), ...images.slice(index + 1)])
+
+  }
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     setEditing(true);
 
+    // updatedPost is the object sent to the /api/posts PUT route 
+    // It represents all the changes the user could make from the posts edit UI
     const updatedPost = {
       title,
       summary,
       content,
-      imagePrompts
     };
 
     const response = await fetch(`/api/posts/${post.id}`, {
@@ -174,16 +183,33 @@ function EditPost({ post }) {
           <MDEditor value={content} onChange={setContent} />
         </div>
 
-        {imagePrompts.map((prompt, index) => (
-          <div key={index} className="flex flex-col space-y-2">
-            <label className="font-semibold text-lg">Image Prompt {index + 1}:</label>
+        {images.map((prompt, index) => (
+
+          <div key={index} className="flex items-center space-x-4">
+
             <input
               type="text"
               value={prompt.text}
               onChange={(e) => updateImagePrompt(index, e.target.value)}
-              className="p-2 border rounded"
+              className="flex-1 p-2 border rounded"
             />
+
+            <button
+              onClick={() => deleteImagePrompt(index)}
+              className="p-2 bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Delete
+            </button>
+
+            <button
+              onClick={() => retryImagePrompt(index)}
+              className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              <ReloadIcon />
+            </button>
+
           </div>
+
         ))}
 
         <div className="flex justify-center space-x-4 mt-12 mb-4">
@@ -202,7 +228,6 @@ function EditPost({ post }) {
           <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mr-4 rounded focus:outline-none focus:shadow-outline" type="button" onClick={addImagePrompt}>
             Add Image Prompt
           </button>
-
           <button
             disabled={editing}
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 ml-4 rounded focus:outline-none focus:shadow-outline" type="submit">
@@ -246,8 +271,8 @@ function EditPost({ post }) {
         </button>
       </div>
 
-
-      {(loadingImages && <span><Spinner /> Loading images...</span>)}
+      {/* Show user the images are still being loaded... */}
+      {loadingImages && (<h1><Spinner /> Loading images...</h1>)}
 
       {showImages && (
         <div className="mt-4">
@@ -255,7 +280,7 @@ function EditPost({ post }) {
           <hr className="w-148 h-1 mx-auto my-4 bg-gray-100 border-0 rounded md:my-10 dark:bg-gray-700"></hr>
           <div>
             <div className="grid grid-cols-3 gap-4">
-              {(images.length > 0) && images.map(image => (
+              {(images.length > 0) && images.map(image => (image.image_url !== '' && typeof (image.image_url) != 'undefined' &&
                 <div key={image.id} className="relative">
                   <Image
                     className="object-cover w-full rounded-md"
@@ -304,7 +329,7 @@ export default function EditPostPage({ params }) {
   const id = params.id
 
   console.log('EditPostPage...')
-  console.log(`id: ${id}`)
+  console.log(`id: ${id} `)
 
   useEffect(() => {
     if (!id) return
