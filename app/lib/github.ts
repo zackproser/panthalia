@@ -74,7 +74,7 @@ export async function startGitPostUpdates(post: Post) {
   const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
 
   try {
-    fetch(`${baseUrl}/api/git`, {
+    await fetch(`${baseUrl}/api/git`, {
       headers: {
         'Content-Type': 'application/json',
       },
