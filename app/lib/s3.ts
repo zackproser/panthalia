@@ -22,6 +22,9 @@ async function downloadImageFromS3(imageKey: string): Promise<void> {
       Key: imageKey
     };
 
+    // Touch the target filepath if it doesn't exist
+    fs.closeSync(fs.openSync(imageFilepath, 'w'));
+
     const file = fs.createWriteStream(imageFilepath, { flags: 'w' });
     const stream = s3.getObject(params).createReadStream();
 
