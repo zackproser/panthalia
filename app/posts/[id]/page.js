@@ -87,14 +87,16 @@ function EditPost({ post }) {
 
   const addImageToPostBody = (importStatement, nextImageStatement) => {
     console.log(`addImageToPostBody: importStatement: ${importStatement}, nextImageStatement: ${nextImageStatement}`)
-    // If the image variable has already been imported in the post body, don't import it again, 
+    // If this is the first instance of an `<Image` in the post body, then that means it's the hero image for the post 
+    // 
+    // which means the import statement SHOULD NOT be included, because it will cause a compile time
     // just render the image link the body of the content 
     let newContent = ''
-    if (content.includes(importStatement)) {
-      console.log(`The image has already been imported in the post body.`)
+    if (!content.includes(`<Image`)) {
+      console.log(`This is the first next/image in the post body, so the import statement already exists in the header and won't be duplicated.`)
       newContent = `${content}\n\n${nextImageStatement}`
     } else {
-      console.log(`The image has not been imported in the post body. including import statement`)
+      console.log(`This is NOT the first next/image in the post body, so the import statement should be included.`)
       newContent = `${content}\n\n${importStatement}\n\n${nextImageStatement}`
     }
     console.log(`newContent: ${newContent}`)
