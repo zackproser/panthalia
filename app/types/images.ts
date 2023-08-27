@@ -59,7 +59,8 @@ export class PanthaliaImage {
   }
 
   toCamelCase(str: string): string {
-    return str.replace(/-([a-z])/g, function(g) { return g[1].toUpperCase(); });
+    return str.replace(/-([a-zA-Z0-9])/g, function(g) { return g[1].toUpperCase(); })
+      .replace(/-$/, ''); // handle edge case where the hyphen is at the end
   }
 
   generateKeyFromUrl(url: URL) {
