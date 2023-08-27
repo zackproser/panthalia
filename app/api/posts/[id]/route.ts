@@ -116,9 +116,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     // And which we treat as a const - we don't want it to change, so that multiple functions can always resolve the same filepaths, etc
     const fullPostRecord: Post = result.rows[0] as Post;
 
-    // Intentionally fire and forget the background job to update the post content via git 
-    // and push the changes to the same branch associated with the open pull request 
-    startGitPostUpdates(fullPostRecord)
+    await startGitPostUpdates(fullPostRecord)
 
     return NextResponse.json({ post: result.rows[0] }, { status: 200 });
 
