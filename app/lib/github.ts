@@ -56,7 +56,7 @@ export async function startGitProcessing(post: Post) {
   const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
 
   try {
-    await fetch(`${baseUrl}/api/git`, {
+    fetch(`${baseUrl}/api/git`, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -74,13 +74,13 @@ export async function startGitPostUpdates(post: Post) {
   const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
 
   try {
-    await fetch(`${baseUrl}/api/git`, {
+    fetch(`${baseUrl}/api/git`, {
       headers: {
         'Content-Type': 'application/json',
       },
       method: 'PUT',
       body: JSON.stringify(post),
-    });
+    })
   } catch (error) {
     console.log(`error: ${error}`);
   }
