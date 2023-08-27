@@ -41,14 +41,19 @@ export async function PUT(request: Request) {
     console.log('git PUT route hit...')
 
     const updatedPost: Post = await request.json()
-
     console.log(`updatedPost data submitted /api/git: %o`, updatedPost)
 
     // Intentionally fire and forget the post updating routine
     await updatePostWithOpenPR(updatedPost).then(() => {
+
       console.log('post updating complete')
+      return NextResponse.json({ success: true }, { status: 200 });
+
     }).catch((error) => {
+
       console.log(`post updating error: ${error}`)
+      return NextResponse.json({ success: false }, { status: 500 });
+
     })
 
   } catch (error) {
