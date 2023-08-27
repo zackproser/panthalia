@@ -43,7 +43,6 @@ export async function PUT(request: Request) {
     const updatedPost: Post = await request.json()
     console.log(`updatedPost data submitted /api/git: %o`, updatedPost)
 
-    // Intentionally fire and forget the post updating routine
     await updatePostWithOpenPR(updatedPost).then(() => {
 
       console.log('post updating complete')

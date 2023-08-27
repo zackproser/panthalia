@@ -56,13 +56,17 @@ export async function startGitProcessing(post: Post) {
   const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
 
   try {
-    fetch(`${baseUrl}/api/git`, {
+    await fetch(`${baseUrl}/api/git`, {
       headers: {
         'Content-Type': 'application/json',
       },
       method: 'POST',
       body: JSON.stringify(post),
-    });
+    }).then(() => {
+      console.log(`Finished initial git operations`)
+    }).catch((err) => {
+      console.log(`Error during initial git operations: ${err}`)
+    })
   } catch (error) {
     console.log(`error: ${error}`);
   }
@@ -74,12 +78,16 @@ export async function startGitPostUpdates(post: Post) {
   const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
 
   try {
-    fetch(`${baseUrl}/api/git`, {
+    await fetch(`${baseUrl}/api/git`, {
       headers: {
         'Content-Type': 'application/json',
       },
       method: 'PUT',
       body: JSON.stringify(post),
+    }).then(() => {
+      console.log(`Finished updating existing post via git`)
+    }).catch((err) => {
+      console.log(`Error updatingf existing post via git: ${err}`)
     })
   } catch (error) {
     console.log(`error: ${error}`);
