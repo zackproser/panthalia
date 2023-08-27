@@ -66,7 +66,12 @@ export default function PostCard({ post, deletePost }) {
           </Link>
 
           <div className="flex items-center p-3">
-            <Image src={post.leaderimageurl ?? 'https://picsum.photos/200/300'} width={75} height={75} />
+            <Image
+              src={post.leaderimageurl ?? 'https://picsum.photos/200/300'}
+              width={75}
+              height={75}
+              alt={`${post.title} hero image`}
+            />
           </div>
 
           <p className="mt-2 text-slate-800">{truncate(post.summary, 50)}</p>

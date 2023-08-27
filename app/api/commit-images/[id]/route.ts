@@ -1,12 +1,11 @@
-import { NextResponse } from 'next/server';
-
+import { NextResponse } from 'next/server'
 import { getServerSession } from "next-auth/next"
 import { authOptions } from '../../../lib/auth/options'
 
 import { sql } from '@vercel/postgres';
 
 import { downloadImagesFromS3 } from '../../../lib/s3'
-import { commitAndPush } from '../../../lib/git';
+import { cloneRepoAndCheckoutBranch, commitAndPush } from '../../../lib/git';
 
 // This route is a get because of the way that image downloading logic works: 
 // The user can see all the images generated for a given post on its edit page 
@@ -45,10 +44,6 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       imageUrls.push(row.image_url ?? '');
     })
 
-    console.log(`imageUrls prior to downloading from S3: ${imageUrls}`)
-
-    await downloadImagesFromS3(imageUrls)
-
     // Get the branch of the post 
     const postResult = await sql`
       SELECT gitbranch, title
@@ -58,6 +53,13 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     const branchName = postResult.rows[0].gitbranch
     const postTitle = postResult.rows[0].title
     const update = true
+
+    // Before we can download the images we need a fresh clone of the repo 
+    await cloneRepoAndCheckoutBranch(branchName, update)
+
+    console.log(`imageUrls prior to downloading from S3: ${imageUrls}`)
+
+    await downloadImagesFromS3(imageUrls)
 
     // Commit and push
     await commitAndPush(branchName, postTitle, update);
