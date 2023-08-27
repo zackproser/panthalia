@@ -32,7 +32,6 @@ export async function generatePostContent(title: string, summary: string, conten
 
   // The following template sets up the basic configuration for all my blog posts
   const baseMdx = `
-
     import { ArticleLayout } from '@/components/ArticleLayout'
     import { Newsletter } from '@/components/Newsletter'
 
@@ -47,14 +46,14 @@ export async function generatePostContent(title: string, summary: string, conten
       image: ${heroImage}
      }
 
-    export default (props) => <ArticleLayout meta={meta} {...props} />
-`
+    export default (props) => <ArticleLayout meta={meta} {...props} />`
+
   const mdx = `
-${imageImportMdx} 
+${imageImportMdx.trim()} 
 
-${baseMdx} 
+${baseMdx.trim()} 
 
-${content}
+${content.trim()}
 `
   return mdx
 }
