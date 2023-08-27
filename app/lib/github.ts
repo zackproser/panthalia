@@ -56,7 +56,7 @@ export async function startGitProcessing(post: Post) {
   const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
 
   try {
-    fetch(`${baseUrl}/api/git`, {
+    await fetch(`${baseUrl}/api/git`, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -108,18 +108,15 @@ export async function updatePostWithOpenPR(updatedPost: Post) {
     and error IS NULL 
   `
 
-  let leaderImgImportStatement = '';
-  let leaderImgVarName = '';
+  let images: PanthaliaImage[] = [];
 
   if (imagesResult.rows.length > 0) {
-    // Get the first image 
-    const promptText = imagesResult.rows.shift().prompt_text
-
-    const panthaliaImg = new PanthaliaImage({ promptText });
-
-    // Generate the camelCase variable name for the leader image
-    leaderImgVarName = panthaliaImg.getImageVariableName();
-    leaderImgImportStatement = panthaliaImg.getImportStatement();
+    // Gather up the current images and convert them to PanthaliaImages, as expected by the generatePostContent
+    for (const imageRow of imagesResult.rows) {
+      const promptText = imageRow.prompt_text
+      const panthaliaImage = new PanthaliaImage({ promptText });
+      images.push(panthaliaImage);
+    }
   }
 
   // Generate post content
@@ -127,8 +124,7 @@ export async function updatePostWithOpenPR(updatedPost: Post) {
     updatedPost.title,
     updatedPost.summary,
     updatedPost.content,
-    leaderImgImportStatement,
-    leaderImgVarName
+    images
 
   );
   console.log(`postContent: ${postContent}`);
@@ -176,18 +172,15 @@ export async function processPost(newPost: Post) {
     and error IS NULL 
   `
 
-  let leaderImgImportStatement = '';
-  let leaderImgVarName = '';
+  let images: PanthaliaImage[] = [];
 
   if (imagesResult.rows.length > 0) {
-    // Get the first image 
-    const promptText = imagesResult.rows.shift().prompt_text
-
-    const panthaliaImg = new PanthaliaImage({ promptText });
-
-    // Generate the camelCase variable name for the leader image
-    leaderImgVarName = panthaliaImg.getImageVariableName();
-    leaderImgImportStatement = panthaliaImg.getImportStatement();
+    // Gather up the current images and convert them to PanthaliaImages, as expected by the generatePostContent
+    for (const imageRow of imagesResult.rows) {
+      const promptText = imageRow.prompt_text
+      const panthaliaImage = new PanthaliaImage({ promptText });
+      images.push(panthaliaImage);
+    }
   }
 
   // Generate post content
@@ -195,9 +188,7 @@ export async function processPost(newPost: Post) {
     newPost.title,
     newPost.summary,
     newPost.content,
-    leaderImgImportStatement,
-    leaderImgVarName
-
+    images
   );
   console.log(`postContent: ${postContent}`);
 
