@@ -17,12 +17,12 @@ export async function generatePostContent(title: string, summary: string, conten
 
   let imageImportSet = new Set<string>();
 
+  // If the heroImage is undefined then the portfolio repo will use its default hero image
+  const heroImage = images.length ? images[0].getImageVariableName() : undefined
+
   for (const image of images) {
     imageImportSet.add(image.getImportStatement());
   }
-
-  // Use destructuring to get only the first image of the set 
-  const [heroImage] = imageImportSet;
 
   let imageImportMdx = ``
 
