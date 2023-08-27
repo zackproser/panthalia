@@ -85,21 +85,9 @@ function EditPost({ post }) {
     setImagePrompts([...imagePrompts, { type: 'image', text: '' }]);
   };
 
-  const addImageToPostBody = (importStatement, nextImageStatement) => {
-    console.log(`addImageToPostBody: importStatement: ${importStatement}, nextImageStatement: ${nextImageStatement}`)
-    // If this is the first instance of an `<Image` in the post body, then that means it's the hero image for the post 
-    // 
-    // which means the import statement SHOULD NOT be included, because it will cause a compile time
-    // just render the image link the body of the content 
-    let newContent = ''
-    if (!content.includes(`<Image`)) {
-      console.log(`This is the first next/image in the post body, so the import statement already exists in the header and won't be duplicated.`)
-      newContent = `${content}\n\n${nextImageStatement}`
-    } else {
-      console.log(`This is NOT the first next/image in the post body, so the import statement should be included.`)
-      newContent = `${content}\n\n${importStatement}\n\n${nextImageStatement}`
-    }
-    console.log(`newContent: ${newContent}`)
+  const addImageToPostBody = (nextImageStatement) => {
+    const newContent = `${content}\n\n${nextImageStatement}`
+    console.log(`addImageToPostBody newContent: ${newContent}`)
     setContent(newContent)
   }
 
@@ -275,7 +263,7 @@ function EditPost({ post }) {
                   <button
                     className="absolute top-0 right-0 bg-green-300 hover:bg-green-400 text-white font-bold py-1 px-2 rounded"
                     onClick={() => {
-                      addImageToPostBody(image.import_statement, image.rendered)
+                      addImageToPostBody(image.rendered)
                     }}
                   >
                     Add image to post
