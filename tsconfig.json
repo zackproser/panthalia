@@ -21,7 +21,8 @@
       {
         "name": "next"
       }
-    ]
+    ], 
+    "target": "es6"
   },
   "include": [
     "next-env.d.ts",
