@@ -32,27 +32,29 @@ export async function generatePostContent(title: string, summary: string, conten
 
   // The following template sets up the basic configuration for all my blog posts
   const baseMdx = `
+import { ArticleLayout } from '@/components/ArticleLayout'
+import { Newsletter } from '@/components/Newsletter'
 
-    import { ArticleLayout } from '@/components/ArticleLayout'
-    import { Newsletter } from '@/components/Newsletter'
+import Image from 'next/image'
+import Link from 'next/link'
 
-    import Image from 'next/image'
-    import Link from 'next/link'
+export const meta = {
+  author: "Zachary Proser",
+  date: "${new Date().toLocaleDateString()}",
+  title: "${title}",
+  description: "${summary}", 
+  image: ${heroImage}
+}
 
-    export const meta = {
-      author: "Zachary Proser",
-      date: "${new Date().toLocaleDateString()}",
-      title: "${title}",
-      description: "${summary}", 
-      image: ${heroImage}
-     }
+export default (props) => <ArticleLayout meta={meta} {...props} />`
 
-    export default (props) => <ArticleLayout meta={meta} {...props} />
-      
-    ${content}
+  const mdx = `
+${imageImportMdx.trim()} 
+
+${baseMdx.trim()} 
+
+${content.trim()}
 `
-  const mdx = baseMdx + imageImportMdx
-
   return mdx
 }
 
