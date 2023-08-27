@@ -48,18 +48,20 @@ export async function generatePostContent(title: string, summary: string, conten
      }
 
     export default (props) => <ArticleLayout meta={meta} {...props} />
-      
-    ${content}
 `
-  const mdx = baseMdx + imageImportMdx
+  const mdx = `
+${imageImportMdx} 
 
+${baseMdx} 
+
+${content}
+`
   return mdx
-}
 
-export function truncate(text: string, length: number) {
-  if (text.length <= length) {
-    return text;
+  export function truncate(text: string, length: number) {
+    if (text.length <= length) {
+      return text;
+    }
+    return text.substring(0, length) + "...";
   }
-  return text.substring(0, length) + "...";
-}
 
