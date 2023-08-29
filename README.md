@@ -10,6 +10,13 @@ Panthalia is a homebrewed blog post accelerator system - it allows me to author 
 
 **Panthalia enables me to kick-off blog posts as quickly as I can think of ideas for new posts** - and gives me the option to either see production all the way through on my phone, or return to the pull request opened by Panthalia once I'm back at a laptop or desktop.
 
+## Live demo and walkthrough 
+
+In this YouTube video, I give a live demo of the app and talk through the technical considerations and how it works. Check out the timestamps in the description to jump to the section you're interested in.
+
+[![Panthalia - open-source AI-assisted mobile blogging platform](https://img.youtube.com/vi/7wxu6ZoZN8Q/0.jpg)](https://www.youtube.com/watch?v=7wxu6ZoZN8Q)
+
+
 ## Available anywhere 
 
 A mobile-first experience available anywhere            | Guarded by GitHub oAuth
