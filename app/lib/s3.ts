@@ -1,50 +1,53 @@
-import { S3 } from 'aws-sdk';
+import {
+  GetObjectCommand,
+  PutObjectCommand,
+  DeleteObjectCommand,
+  S3Client
+} from "@aws-sdk/client-s3";
 
 import { join } from 'path';
 import fs from 'fs'
 
 import { clonePath } from '../lib/git'
 
-// Initialize the Amazon S3 client
-const s3 = new S3({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-});
+const client = new S3Client({});
 
 async function downloadImageFromS3(imageKey: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const imageFilepath = join(clonePath, 'src', 'images', `${imageKey}.png`).toLowerCase()
 
-    console.log(`downloadImageFromS3 - Downloading image from S3: ${imageKey}`)
+  console.log(`downloadImageFromS3 - Downloading image from S3: ${imageKey}`);
 
-    const params = {
-      Bucket: process.env.S3_BUCKET_NAME,
-      Key: imageKey
-    };
+  // Build the full filepath to the image within my portfolio site's repository
+  const imageFilepath = join(clonePath, 'src', 'images', `${imageKey}.png`).toLowerCase()
 
-    // Touch the target filepath if it doesn't exist
-    fs.closeSync(fs.openSync(imageFilepath, 'w'));
+  // Touch the target filepath if it doesn't exist to avoid errors when deployed on Vercel
+  // and using the /tmp directory
+  fs.closeSync(fs.openSync(imageFilepath, 'w'));
 
-    const file = fs.createWriteStream(imageFilepath, { flags: 'w' });
-    const stream = s3.getObject(params).createReadStream();
+  const file = fs.createWriteStream(imageFilepath, { flags: 'w' });
 
-    stream.on('error', reject);
+  const params = {
+    Bucket: process.env.S3_BUCKET_NAME,
+    Key: imageKey
+  }
 
-    stream.on('data', (chunk) => {
-      file.write(chunk);
-    });
+  const command = new GetObjectCommand(params);
 
-    stream.on('end', () => {
-      file.end();
-    });
+  try {
+    const data = await client.send(command);
 
-    file.on('finish', function() {
-      console.log(`S3 imageKey: ${imageKey} downloaded successfully to filepath: ${imageFilepath}`);
-      resolve();
-    });
+    if (!data.Body) {
+      throw new Error(`S3 download image error: ${imageKey} not found`);
+    }
 
-    file.on('error', reject);
-  });
+    const readableStream: ReadableStream = data.Body!.transformToWebStream()
+    await readableStream.pipeTo(file as any).then(() => {
+      console.log(`downloadImageFromS3 - Downloaded image from S3: ${imageKey}`);
+    })
+
+  } catch (err) {
+    console.error(`S3 download image error: %o`, err);
+  }
+
 }
 
 export async function downloadImagesFromS3(urls: string[]) {
@@ -64,6 +67,8 @@ export async function downloadImagesFromS3(urls: string[]) {
 
 // Returns a Promise which returns a string
 export async function uploadImageToS3(url: string, key: string): Promise<string> {
+
+  console.log(`uploadImageToS3 - Uploading image to S3: url: ${url}, key: ${key}`);
   // Fetch the image from the URL
   const response = await fetch(url);
 
@@ -79,34 +84,37 @@ export async function uploadImageToS3(url: string, key: string): Promise<string>
     ContentType: response.headers.get('content-type'),
   };
 
-  // Upload the file to S3
+  const command = new PutObjectCommand(params);
+
+  const putResponse = await client.send(command);
+
   return new Promise((resolve, reject) => {
-    s3.upload(params, function(err: Error, data: S3.ManagedUpload.SendData) {
-      if (err) {
-        reject(err);
-      }
-      console.log(`File uploaded successfully at ${data.Location}`);
-      resolve(data.Location);
-    });
-  });
+
+    console.log(`putResponse HTTP status code: ${putResponse.$metadata.httpStatusCode}`)
+
+    if (putResponse.$metadata.httpStatusCode !== 200) {
+      reject("")
+    }
+
+    resolve(`https://${process.env.S3_BUCKET_NAME}.s3.us-east-1.amazonaws.com/${key}`)
+  })
 }
 
 export async function deleteImageFromS3(key: string) {
 
-  console.log(`deleteImageFromS3 - Deleting image from S3: ${key}`);
+  console.log(`deleteImageFromS3 - Deleting image from S3: ${key} `);
 
-  return new Promise((resolve, reject) => {
-    s3.deleteObject({
-      Bucket: process.env.S3_BUCKET_NAME,
-      Key: key,
-    }, function(err: Error, data: S3.DeleteObjectOutput) {
-      if (err) {
-        console.log(`Error deleting image from S3: ${err}`);
-        reject(err);
-      }
-      resolve(data);
-    });
-  });
+  const params = {
+    Bucket: process.env.S3_BUCKET_NAME,
+    Key: key
+  }
+
+  const command = new DeleteObjectCommand(params);
+
+  try {
+    const response = await client.send(command);
+    console.log(`S3 delete response: % o$`, response);
+  } catch (err) {
+    console.error(`S3 delete item error: % o`, err);
+  }
 }
-
-
