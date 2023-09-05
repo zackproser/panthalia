@@ -9,11 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.405.0",
     "@octokit/plugin-rest-endpoint-methods": "^9.0.0",
     "@uiw/react-md-editor": "v3.6.0",
     "@vercel/postgres": "^0.4.0",
     "autoprefixer": "^10.4.14",
-    "aws-sdk": "^2.1425.0",
     "eslint": "8.45.0",
     "eslint-config-next": "13.4.10",
     "install": "^0.13.0",
