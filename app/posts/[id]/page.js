@@ -167,7 +167,7 @@ function EditPost({ post }) {
 
       </form>
 
-      <div className="flex mt-12 mb-4 md:mb-8">
+      <div className="flex mt-2 mb-4 md:mb-8">
         <button className="mx-2 text-xs w-16 md:w-32 md:text-base lg:w-48 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline" type="button" onClick={addImagePrompt}>
           +prompt
         </button>
@@ -205,7 +205,7 @@ function EditPost({ post }) {
 
       {(loadingImages && <span><Spinner /> Loading images...</span>)}
 
-      <div className="mt-4">
+      <div className="mt-2">
         <div>
           <div className="grid grid-cols-3 gap-4">
             {(images.length > 0) && images.map(image => (
@@ -218,22 +218,16 @@ function EditPost({ post }) {
                   height={550}
                 />
                 <button
-                  className="absolute top-0 left-0 bg-blue-600 hover:bg-blue-800 text-white font-bold py-1 px-2 rounded"
-                >
-                  {image.slug}
-                </button>
-
-                <button
-                  className="absolute top-0 right-0 bg-green-300 hover:bg-green-400 text-white font-bold py-1 px-2 rounded"
+                  className="absolute top-0 right-0 mx-2 text-xs w-16 md:w-32 md:text-base lg:w-48 bg-green-300 hover:bg-green-400 text-white font-bold py-1 rounded"
                   onClick={() => {
                     addImageToPostBody(image.rendered)
                   }}
                 >
-                  Add image to post
+                  +
                 </button>
 
                 <button
-                  className="absolute top-0 right-0 bg-red-600 hover:bg-red-800 text-white font-bold py-1 px-2 rounded"
+                  className="absolute bottom-0 right-0 mx-2 text-xs w-16 md:w-32 md:text-base lg:w-48 bg-red-600 hover:bg-red-800 text-white font-bold py-1 rounded"
                   onClick={() => handleDeleteImage(image.id, image.image_url)}
                 >
                   {(deletingImage && deletingImage === image.id) ? <> <Spinner /> Deleting... </> : 'Delete'}
