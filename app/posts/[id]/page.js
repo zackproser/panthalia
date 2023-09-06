@@ -198,7 +198,7 @@ function EditPost({ post }) {
           className="mx-2 text-xs w-16 md:w-32 md:text-base lg:w-48 bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline"
           onClick={addNewsletterCaptureToPostBody}
         >
-          Newsletter Capture
+          Email capture
         </button>
 
       </div>
