@@ -29,7 +29,6 @@ function EditPost({ post }) {
   const [images, setImages] = useState([])
   const [loadingImages, setLoadingImages] = useState(true)
   const [deletingImage, setDeletingImage] = useState(null)
-  const [showImages, setShowImages] = useState(true)
   const [commitingImages, setCommitingImages] = useState(false)
 
   useEffect(() => {
@@ -66,10 +65,6 @@ function EditPost({ post }) {
       }).catch(error => {
         console.error(error)
       })
-  }
-
-  const toggleImages = () => {
-    setShowImages(!showImages)
   }
 
   console.log(`EditPost component...:%o`, post)
@@ -134,23 +129,20 @@ function EditPost({ post }) {
     <>
       <form onSubmit={handleSubmit} className="edit-post-form w-full mb-4">
         <div className="mb-4">
-          <label className="block text-gray-700 font-bold mb-2">
-            Title
-          </label>
           <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            placeholder="Title"
             type="text"
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
         </div>
 
         <div className="mb-4">
-          <label className="block text-gray-700 font-bold mb-2">
-            Summary
-          </label>
-          <textarea
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-40 resize-none"
+          <input
+            placeholder="Title"
+            type="text"
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline resize-none"
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
           />
@@ -158,129 +150,100 @@ function EditPost({ post }) {
 
 
         <div className="w-full mb-4">
-          <label className="block text-gray-700 font-bold mb-2">
-            Content:
-          </label>
-          <MDEditor value={content} onChange={setContent} />
+          <MDEditor height={450} value={content} onChange={setContent} />
         </div>
 
         {imagePrompts.map((prompt, index) => (
           <div key={index} className="flex flex-col space-y-2">
-            <label className="font-semibold text-lg">Image Prompt {index + 1}:</label>
             <input
               type="text"
+              placeholder="Image prompt"
               value={prompt.text}
               onChange={(e) => updateImagePrompt(index, e.target.value)}
-              className="p-2 border rounded"
+              className="p-2 my-2 border rounded"
             />
           </div>
         ))}
 
-        <div className="flex justify-center space-x-4 mt-12 mb-4">
-          <Link
-            href={"/"}
-          >
-            <button
-              type="button"
-              className="px-4 py-2 bg-blue-300 text-white rounded hover:bg-blue-600"
-            >
-              Posts
-            </button>
-          </Link>
-
-
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mr-4 rounded focus:outline-none focus:shadow-outline" type="button" onClick={addImagePrompt}>
-            Add Image Prompt
-          </button>
-
-          <button
-            disabled={editing}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 ml-4 rounded focus:outline-none focus:shadow-outline" type="submit">
-            {editing ? (
-              <>
-                <span>Updating...</span>
-                <Spinner />
-              </>
-            ) : (
-              'Update post'
-            )}
-          </button>
-
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            onClick={toggleImages}
-          >
-            {showImages ? 'Hide Images' : 'Show Images'}
-          </button>
-
-        </div>
       </form>
 
-      <div>
+      <div className="flex mt-12 mb-4 md:mb-8">
+        <button className="mx-2 text-xs w-16 md:w-32 md:text-base lg:w-48 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline" type="button" onClick={addImagePrompt}>
+          +prompt
+        </button>
+
         <button
-          className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          disabled={editing}
+          className="mx-2 text-xs w-16 md:w-32 md:text-base lg:w-48 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline" type="submit">
+          {editing ? (
+            <>
+              <span>Updating...</span>
+              <Spinner />
+            </>
+          ) : (
+            'Commit changes'
+          )}
+        </button>
+
+        <button
+          className="mx-2 text-xs w-16 md:w-32 md:text-base lg:w-48 bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline"
           disabled={commitingImages}
           onClick={commitImages}
         >
           {/* Show spinner if committing images */}
           {commitingImages && <Spinner />} Commit images to branch
         </button>
-      </div>
 
-      <div>
         <button
-          className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          className="mx-2 text-xs w-16 md:w-32 md:text-base lg:w-48 bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline"
           onClick={addNewsletterCaptureToPostBody}
         >
-          Add Newsletter Capture
+          Newsletter Capture
         </button>
-      </div>
 
+      </div>
 
       {(loadingImages && <span><Spinner /> Loading images...</span>)}
 
-      {showImages && (
-        <div className="mt-4">
-          {/* Show images */}
-          <hr className="w-148 h-1 mx-auto my-4 bg-gray-100 border-0 rounded md:my-10 dark:bg-gray-700"></hr>
-          <div>
-            <div className="grid grid-cols-3 gap-4">
-              {(images.length > 0) && images.map(image => (
-                <div key={image.id} className="relative">
-                  <Image
-                    className="object-cover w-full rounded-md"
-                    src={image.image_url}
-                    alt={image.alt}
-                    width={550}
-                    height={550}
-                  />
-                  <button
-                    className="absolute top-0 left-0 bg-blue-600 hover:bg-blue-800 text-white font-bold py-1 px-2 rounded"
-                  >
-                    {image.slug}
-                  </button>
+      <div className="mt-4">
+        <div>
+          <div className="grid grid-cols-3 gap-4">
+            {(images.length > 0) && images.map(image => (
+              <div key={image.id} className="relative">
+                <Image
+                  className="object-cover w-full rounded-md"
+                  src={image.image_url}
+                  alt={image.alt}
+                  width={550}
+                  height={550}
+                />
+                <button
+                  className="absolute top-0 left-0 bg-blue-600 hover:bg-blue-800 text-white font-bold py-1 px-2 rounded"
+                >
+                  {image.slug}
+                </button>
 
-                  <button
-                    className="absolute top-0 right-0 bg-green-300 hover:bg-green-400 text-white font-bold py-1 px-2 rounded"
-                    onClick={() => {
-                      addImageToPostBody(image.rendered)
-                    }}
-                  >
-                    Add image to post
-                  </button>
+                <button
+                  className="absolute top-0 right-0 bg-green-300 hover:bg-green-400 text-white font-bold py-1 px-2 rounded"
+                  onClick={() => {
+                    addImageToPostBody(image.rendered)
+                  }}
+                >
+                  Add image to post
+                </button>
 
-                  <button
-                    className="absolute top-0 right-0 bg-red-600 hover:bg-red-800 text-white font-bold py-1 px-2 rounded"
-                    onClick={() => handleDeleteImage(image.id, image.image_url)}
-                  >
-                    {(deletingImage && deletingImage === image.id) ? <> <Spinner /> Deleting... </> : 'Delete'}
-                  </button>
-                </div>
-              ))}
-            </div>
+                <button
+                  className="absolute top-0 right-0 bg-red-600 hover:bg-red-800 text-white font-bold py-1 px-2 rounded"
+                  onClick={() => handleDeleteImage(image.id, image.image_url)}
+                >
+                  {(deletingImage && deletingImage === image.id) ? <> <Spinner /> Deleting... </> : 'Delete'}
+                </button>
+              </div>
+            ))}
           </div>
         </div>
-      )}
+      </div>
+
     </>
   );
 }
@@ -334,8 +297,8 @@ export default function EditPostPage({ params }) {
           <Image
             src={panthaliaLogo}
             alt="Panthalia"
-            width={350}
-            height={350}
+            width={250}
+            height={250}
             className="mt-4 mb-12"
           />
           <EditPost post={post} />
