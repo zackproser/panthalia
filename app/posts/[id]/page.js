@@ -135,18 +135,35 @@ function EditPost({ post }) {
     }
   }
 
+  const startListening = () => {
+    console.log(`startListening is running`)
+    listen({ interimResults: false, lang: 'en-US' });
+  }
+
+  const stopListening = () => {
+    stop();
+  }
+
   return (
     <>
-      <button onMouseDown={listen} onMouseUp={stop} className="mx-2 text-xs w-16 md:w-32 md:text-base lg:w-48 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline">
-        🎤 Dictate
-      </button>
+      {listening === false &&
+        <div>
+          <button onClick={startListening} className="mx-2 text-xs w-16 md:w-32 md:text-base lg:w-48 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline">
+            🎤 Dictate
+          </button>
+        </div>}
+
       {listening &&
-        <div>Recording...
+        <div>
+          <button onClick={stopListening} className="mx-2 text-xs w-16 md:w-32 md:text-base lg:w-48 bg-red-500 hover:bg-red-700 text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline">
+            Stop
+          </button>
           <Image
             width={75}
             height={75}
             src={recordingGif} />
-        </div>}
+        </div>
+      }
 
       <form onSubmit={handleSubmit} className="edit-post-form w-full mb-4">
         <div className="mb-4">
