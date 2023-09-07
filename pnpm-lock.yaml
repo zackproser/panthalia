@@ -62,6 +62,9 @@ dependencies:
   react-dom:
     specifier: 18.2.0
     version: 18.2.0(react@18.2.0)
+  react-speech-kit:
+    specifier: ^3.0.1
+    version: 3.0.1(prop-types@15.8.1)(react@18.2.0)
   replicate:
     specifier: ^0.14.0
     version: 0.14.0
@@ -5942,6 +5945,16 @@ packages:
       vfile: 5.3.7
     transitivePeerDependencies:
       - supports-color
+    dev: false
+
+  /react-speech-kit@3.0.1(prop-types@15.8.1)(react@18.2.0):
+    resolution: {integrity: sha512-MXNOciISanhmnxpHJkBOev3M3NPDpW1T7nTc/eGw5pO9cXpoUccRxZkmr/IlpTPbPEneDNeTmbwri/YweyctZg==}
+    peerDependencies:
+      prop-types: ^15.7.2
+      react: ^16.8.0
+    dependencies:
+      prop-types: 15.8.1
+      react: 18.2.0
     dev: false
 
   /react@18.2.0:

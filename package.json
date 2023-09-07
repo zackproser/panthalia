@@ -28,6 +28,7 @@
     "postcss": "^8.4.27",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-speech-kit": "^3.0.1",
     "replicate": "^0.14.0",
     "simple-git": "^3.19.1",
     "slugify": "^1.6.6",

@@ -4,8 +4,11 @@ import styles from '../../page.module.css'
 
 import { useState, useEffect } from 'react';
 
-import Link from 'next/link'
 import Image from 'next/image'
+
+import { useSpeechRecognition } from 'react-speech-kit';
+
+import recordingGif from '/public/recording.gif'
 
 import panthaliaLogo from '/public/panthalia-logo-2.png'
 import Spinner from '../../utils/spinner'
@@ -76,6 +79,14 @@ function EditPost({ post }) {
   const [content, setContent] = useState(post.content);
   const [imagePrompts, setImagePrompts] = useState([]);
 
+  const { listen, listening, stop } = useSpeechRecognition({
+    onResult: (result) => {
+      // Combine the existing value of the MDEditor with the transcript from the speech recognition
+      const updatedContent = content + result
+      setContent(updatedContent);
+    }
+  });
+
   const addImagePrompt = () => {
     setImagePrompts([...imagePrompts, { type: 'image', text: '' }]);
   };
@@ -88,7 +99,6 @@ function EditPost({ post }) {
 
   const addNewsletterCaptureToPostBody = () => {
     const newContent = `${content}\n\n<Newsletter /\>`
-
     setContent(newContent)
   }
 
@@ -127,6 +137,17 @@ function EditPost({ post }) {
 
   return (
     <>
+      <button onMouseDown={listen} onMouseUp={stop} className="mx-2 text-xs w-16 md:w-32 md:text-base lg:w-48 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline">
+        🎤 Dictate
+      </button>
+      {listening &&
+        <div>Recording...
+          <Image
+            width={75}
+            height={75}
+            src={recordingGif} />
+        </div>}
+
       <form onSubmit={handleSubmit} className="edit-post-form w-full mb-4">
         <div className="mb-4">
           <input
