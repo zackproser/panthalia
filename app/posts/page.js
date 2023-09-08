@@ -12,10 +12,9 @@ import { useRouter } from 'next/navigation';
 
 import { useSession } from 'next-auth/react';
 
-
-
 import Header from '../components/header'
 import LoginButton from '../components/login-btn'
+import SpeechToText from '../components/SpeechToText'
 
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
@@ -75,13 +74,7 @@ function NewPostForm() {
 
     // Handle response
     if (data.success) {
-      // Clear form
-
-      /* setTitle('');
-       setSummary('');
-       setContent('');
-       setImagePrompts(['']);*/
-
+      // If the create post call was successfully, immediately return the user to the index page 
       router.push(`/`)
 
     } else {
@@ -101,6 +94,7 @@ function NewPostForm() {
 
   return (
     <>
+      <SpeechToText content={content} updateFunc={setContent} />
       <form onSubmit={submitForm} className="new-post-form w-full mb-4">
         <div className="w-full mb-4">
           <label className="font-semibold text-lg">Title:</label>
