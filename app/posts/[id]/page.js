@@ -6,10 +6,6 @@ import { useState, useEffect } from 'react';
 
 import Image from 'next/image'
 
-import { useSpeechRecognition } from 'react-speech-kit';
-
-import recordingGif from '/public/recording.gif'
-
 import panthaliaLogo from '/public/panthalia-logo-2.png'
 import Spinner from '../../utils/spinner'
 
@@ -17,10 +13,11 @@ import { useSession } from 'next-auth/react';
 import Header from '../../components/header'
 import LoginButton from '../../components/login-btn'
 
+import SpeechToText from '../../components/SpeechToText'
+
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
 import dynamic from "next/dynamic";
-
 
 const MDEditor = dynamic(
   () => import("@uiw/react-md-editor"),
@@ -79,14 +76,6 @@ function EditPost({ post }) {
   const [content, setContent] = useState(post.content);
   const [imagePrompts, setImagePrompts] = useState([]);
 
-  const { listen, listening, stop } = useSpeechRecognition({
-    onResult: (result) => {
-      // Combine the existing value of the MDEditor with the transcript from the speech recognition
-      const updatedContent = content + result
-      setContent(updatedContent);
-    }
-  });
-
   const addImagePrompt = () => {
     setImagePrompts([...imagePrompts, { type: 'image', text: '' }]);
   };
@@ -135,35 +124,9 @@ function EditPost({ post }) {
     }
   }
 
-  const startListening = () => {
-    console.log(`startListening is running`)
-    listen({ interimResults: false, lang: 'en-US' });
-  }
-
-  const stopListening = () => {
-    stop();
-  }
-
   return (
     <>
-      {listening === false &&
-        <div>
-          <button onClick={startListening} className="mx-2 text-xs w-16 md:w-32 md:text-base lg:w-48 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline">
-            🎤 Dictate
-          </button>
-        </div>}
-
-      {listening &&
-        <div>
-          <button onClick={stopListening} className="mx-2 text-xs w-16 md:w-32 md:text-base lg:w-48 bg-red-500 hover:bg-red-700 text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline">
-            Stop
-          </button>
-          <Image
-            width={75}
-            height={75}
-            src={recordingGif} />
-        </div>
-      }
+      <SpeechToText content={content} updateFunc={setContent} />
 
       <form onSubmit={handleSubmit} className="edit-post-form w-full mb-4">
         <div className="mb-4">
