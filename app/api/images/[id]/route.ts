@@ -33,7 +33,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       console.log(`DEBUG: /api/images GET %o`, row)
 
       const opts = {
-        promptText: row.prompt_text
+        promptText: row.prompt_text ?? '',
       }
 
       const panthaliaImg = new PanthaliaImage(opts)

@@ -209,7 +209,7 @@ function EditPost({ post }) {
       <div className="mt-2">
         <div>
           <div className="grid grid-cols-3 gap-4">
-            {(images.length > 0) && images.map(image => (
+            {images && (images.length > 0) && images.map(image => (
               <div key={image.id} className="relative">
                 <Image
                   className="object-cover w-full rounded-md"

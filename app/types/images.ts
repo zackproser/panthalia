@@ -28,14 +28,32 @@ export class PanthaliaImage {
   private error: Error = null;
 
   constructor(options: PanthaliaImageConstructorOptions) {
+    if (!options.promptText && !options.url) {
+      console.warn("PanthaliaImage warning: Neither promptText nor URL provided. Object might not behave as expected.");
+      return;
+    }
+
+    if (options.promptText) {
+      if (options.promptText.trim() === '') {
+        console.warn("PanthaliaImage warning: Empty promptText. Object might not behave as expected.");
+        return;
+      }
+    }
     if (options.promptText) {
       this.generateKeyFromPrompt(options.promptText);
       this.setPromptText(options.promptText);
     } else if (options.url) {
       this.generateKeyFromUrl(options.url);
     } else {
-      throw new Error("Invalid input provided.");
+      throw new Error("New PanthaliImage error: invalid input provided.");
     }
+  }
+
+  isValid(): Boolean {
+    if (this.hasError() === false && this.promptText && this.key) {
+      return true;
+    }
+    return false;
   }
 
   setPromptText(promptText: string) {

@@ -47,7 +47,13 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
       imagesResult.rows.map((imageRow) => {
 
-        const panthaliaImg = new PanthaliaImage({ promptText: imageRow.prompt_text });
+        const panthaliaImg = new PanthaliaImage({ promptText: imageRow.prompt_text ?? '' });
+
+        console.log(`panthaliaImg: %o`, panthaliaImg);
+
+        if (!panthaliaImg.isValid()) {
+          return
+        }
 
         console.log(`panthaliaImg: %o`, panthaliaImg.getImportStatement());
 
