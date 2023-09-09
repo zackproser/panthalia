@@ -38,9 +38,14 @@ export async function PUT(request: Request) {
 
   try {
 
-    console.log('git PUT route hit...')
-
+    console.log('git PUT route hit...');
     const updatedPost: Post = await request.json()
+
+    if (!updatedPost || !updatedPost.gitbranch || !updatedPost.id) {
+      console.log('Missing essential post data');
+      return NextResponse.json({ success: false, reason: "Missing essential post data" }, { status: 400 });
+    }
+
     console.log(`updatedPost data submitted /api/git: %o`, updatedPost)
 
     await updatePostWithOpenPR(updatedPost).then(() => {

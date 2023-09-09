@@ -29,10 +29,16 @@ export async function GET(request: Request, { params }: { params: { id: string }
         WHERE id = ${id}
       `;
 
-      console.log(`fetched post from DB: %o`, result.rows[0]);
+      let postResult
 
-      let postResult = result.rows[0] as any
-      console.log(`postResult: %o`, postResult);
+      if (result.rows && result.rows[0]) {
+        postResult = result.rows[0] as any
+        console.log(`postResult: %o`, postResult);
+      } else {
+        return NextResponse.json({ error: "Post not found" }, { status: 404 });
+      }
+
+      console.log(`fetched post from DB: %o`, result.rows[0]);
 
       // Get all images for the given post
       const imagesResult = await sql`
@@ -45,7 +51,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
       postResult.images = []
 
-      imagesResult.rows.map((imageRow) => {
+      imagesResult.rows.forEach((imageRow) => {
+        if (!imageRow) {
+          return;
+        }
 
         const panthaliaImg = new PanthaliaImage({ promptText: imageRow.prompt_text ?? '' });
 
@@ -81,8 +90,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ posts: result.rows }, { status: 200 });
     }
   } catch (error) {
-
     console.log(`error: ${error}`);
+    return NextResponse.json({ error }, { status: 500 });
   }
 }
 
