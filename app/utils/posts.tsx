@@ -11,14 +11,22 @@ export async function fetchPosts() {
   return data.posts;
 }
 
+interface Metadata {
+  author: string;
+  date: string;
+  title: string;
+  description: string;
+  image?: string;  // Optional property
+}
+
 export async function generatePostContent(title: string, summary: string, content: string, images: PanthaliaImage[]) {
 
-  console.log(`generatePostContent title: ${title} summary: ${summary} content: ${content} images: o%`, images);
+  console.log(`generatePostContent title: ${title} summary: ${summary} content: ${content} images: %o`, images);
 
   let imageImportSet = new Set<string>();
 
   // If the heroImage is undefined then the portfolio repo will use its default hero image
-  const heroImage = images.length ? images[0].getImageVariableName() : undefined
+  const heroImage = (images && images.length > 0) ? `images[0].getImageVariableName()` : undefined
 
   for (const image of images) {
     imageImportSet.add(image.getImportStatement());
@@ -30,6 +38,17 @@ export async function generatePostContent(title: string, summary: string, conten
     imageImportMdx += `${imageImport}\n`;
   }
 
+  let metadata: Metadata = {
+    author: "Zachary Proser",
+    date: `${new Date().toLocaleDateString()}`,
+    title,
+    description: summary,
+  };
+
+  if (heroImage) {
+    metadata = { ...metadata, image: heroImage };
+  }
+
   // The following template sets up the basic configuration for all my blog posts
   const baseMdx = `
 import { ArticleLayout } from '@/components/ArticleLayout'
@@ -38,13 +57,7 @@ import { Newsletter } from '@/components/Newsletter'
 import Image from 'next/image'
 import Link from 'next/link'
 
-export const meta = {
-  author: "Zachary Proser",
-  date: "${new Date().toLocaleDateString()}",
-  title: "${title}",
-  description: "${summary}", 
-  image: ${heroImage}
-}
+export const meta = ${JSON.stringify(metadata)}
 
 export default (props) => <ArticleLayout meta={meta} {...props} />`
 

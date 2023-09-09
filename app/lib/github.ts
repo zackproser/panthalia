@@ -5,6 +5,8 @@ import { sql } from '@vercel/postgres';
 import { Octokit } from "octokit";
 import { RestEndpointMethodTypes } from "@octokit/plugin-rest-endpoint-methods";
 import { PanthaliaImage } from '../types/images';
+import { NextResponse } from 'next/server';
+
 
 import Post from '../types/posts'
 import { generatePostContent } from '../utils/posts';
@@ -64,6 +66,7 @@ export async function startGitProcessing(post: Post) {
       body: JSON.stringify(post),
     }).then(() => {
       console.log(`Finished initial git operations`)
+
     }).catch((err) => {
       console.log(`Error during initial git operations: ${err}`)
     })
@@ -107,6 +110,10 @@ export async function updatePostWithOpenPR(updatedPost: Post) {
   // We'll always need to re-clone the repo each time due to the nature of the ephemeral 
   // serverless environment the "backend" / Vercel functions are running in 
   const cloneUrl = await cloneRepoAndCheckoutBranch(updatedPost.gitbranch, true);
+  if (!cloneUrl) {
+    console.log('Failed to clone repo and checkout branch');
+    return NextResponse.json({ success: false, reason: "Failed to clone repo" }, { status: 500 });
+  }
   console.log(`cloneUrl: ${cloneUrl}`);
 
   // If the post has at least one image, use the image as the leader image which will render on the blog index page
@@ -133,9 +140,10 @@ export async function updatePostWithOpenPR(updatedPost: Post) {
     updatedPost.summary,
     updatedPost.content,
     images
-
   );
+
   console.log(`postContent: ${postContent}`);
+
 
   // Write updated post file 
   const postFilePath = `src/pages/blog/${updatedPost.slug}.mdx`;
