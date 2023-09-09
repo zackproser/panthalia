@@ -20,7 +20,6 @@ export async function startImageGeneration(postId: number) {
 
   console.log(`startImageGeneration: select images result %o`, imagesResult);
 
-
   // Set up the structured image requests for the image generation backend
   let imagePrompts: imagePrompt[] = []
 
