@@ -11,10 +11,16 @@ export async function fetchPosts() {
   return data.posts;
 }
 
+const formatDate = () => {
+  const today = new Date();
+  return `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+};
+
+
 interface Metadata {
+  title: string;
   author: string;
   date: string;
-  title: string;
   description: string;
   image?: string;  // Optional property
 }
@@ -26,7 +32,7 @@ export async function generatePostContent(title: string, summary: string, conten
   let imageImportSet = new Set<string>();
 
   // If the heroImage is undefined then the portfolio repo will use its default hero image
-  const heroImage = (images && images.length > 0) ? `images[0].getImageVariableName()` : undefined
+  const heroImage = (images && images.length > 0) ? images[0].getImageVariableName() : 'wikka'
 
   for (const image of images) {
     imageImportSet.add(image.getImportStatement());
@@ -39,15 +45,12 @@ export async function generatePostContent(title: string, summary: string, conten
   }
 
   let metadata: Metadata = {
-    author: "Zachary Proser",
-    date: `${new Date().toLocaleDateString()}`,
     title,
+    author: "Zachary Proser",
+    date: formatDate(),
     description: summary,
+    image: heroImage,
   };
-
-  if (heroImage) {
-    metadata = { ...metadata, image: heroImage };
-  }
 
   // The following template sets up the basic configuration for all my blog posts
   const baseMdx = `
@@ -57,7 +60,13 @@ import { Newsletter } from '@/components/Newsletter'
 import Image from 'next/image'
 import Link from 'next/link'
 
-export const meta = ${JSON.stringify(metadata)}
+export const meta = {
+ title: "${metadata.title}",
+ author: "${metadata.author}",
+ date: "${metadata.date}",
+ description: "${metadata.description}",
+ image: ${metadata.image},
+} 
 
 export default (props) => <ArticleLayout meta={meta} {...props} />`
 
