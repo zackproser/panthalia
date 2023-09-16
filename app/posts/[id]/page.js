@@ -48,7 +48,7 @@ function EditPost({ post }) {
   const [isRegenerating, setIsRegenerating] = useState({});
   // State to manage which control sections to show or hide 
   const [showImagePrompts, setShowImagePrompts] = useState(true);
-  const [showOtherButtons, setShowOtherButtons] = useState(true);
+  const [showOtherButtons, setShowOtherButtons] = useState(false);
   const [showImages, setShowImages] = useState(true);
 
 
