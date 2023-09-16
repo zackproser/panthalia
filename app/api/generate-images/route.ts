@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import Replicate from "replicate";
 import { uploadImageToS3 } from '../../lib/s3';
-import { sql } from '@vercel/postgres'
+import { QueryResultRow, sql } from '@vercel/postgres'
 
 import { imagePrompt, PanthaliaImage } from '../../types/images';
 
@@ -31,21 +31,38 @@ export async function POST(request: Request) {
   console.log(`Got output from calling replicate API: %o`, output)
   const stableDiffusionImageURL = (Array.isArray(output) && output.length > 0) ? output[0] : undefined
 
-  // TODO - need to handle edit update workflow - user regens a new image from the edit page 
-  // should be an INSERT instead of an update 
   if (typeof stableDiffusionImageURL !== undefined) {
     const s3UploadPath = panthaliaImg.getBucketObjectKey()
     console.log(`slugified s3UploadPath: %o`, s3UploadPath)
 
     const uploadedImageS3Path = await uploadImageToS3(stableDiffusionImageURL, s3UploadPath);
+    let result: QueryResultRow;
 
-    // Update the image in the images table with the latest image_url value  
-    const result = await sql`
+    if (prompt.regen) {
+      // User is regen'ing a new image from the edit page
+      // should be an INSERT instead of an update 
+      result = await sql`
+        INSERT into images (
+          image_url, 
+          prompt_text,
+          post_id
+        )
+        VALUES (
+          ${uploadedImageS3Path},
+          ${prompt.text},
+          ${prompt.postId}
+        )
+      `
+    } else {
+      // Update the image in the images table with the latest image_url value  
+      result = await sql`
       UPDATE images 
       SET image_url = ${uploadedImageS3Path},
           post_id = ${prompt.postId}
       WHERE id = ${prompt.imageId}
     `
+
+    }
     console.log(`Result of saving S3 image URL to images table: %o for post_id: ${prompt.postId}`, result)
   } else {
     // Otherwise, the image generation failed for some reason - so we don't save anything to S3 and we don't have 

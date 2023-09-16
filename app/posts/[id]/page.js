@@ -86,7 +86,7 @@ function EditPost({ post }) {
       fetch(`/api/generate-images/`,
         {
           method: 'POST',
-          body: JSON.stringify({ imageId, postId: post.id, text })
+          body: JSON.stringify({ imageId, postId: post.id, text, regen: true })
         })
         .then(response => {
           if (response.ok) {
@@ -150,7 +150,6 @@ function EditPost({ post }) {
       }
 
       // Otherwise, we need to make a DELETE call to remove the image from DB
-      setDeletingImage(imageId);
       console.log(`Edit post component - handleDelete is running...imageId: ${imageId}`);
       fetch(`/api/images/${imageId}`, {
         method: 'DELETE',

@@ -2,6 +2,7 @@ export interface imagePrompt {
   imageId: number;
   postId: number;
   text: string,
+  regen?: boolean;
 }
 
 type PanthaliaImageConstructorOptions = {
