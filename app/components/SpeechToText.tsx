@@ -27,7 +27,10 @@ const SpeechToText: FC<SpeechToTextProps> = ({ content, updateFunc }) => {
     <>
       {listening === false &&
         <div>
-          <button onClick={startListening} className="mx-2 text-xs w-16 md:w-32 md:text-base lg:w-48 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline">
+          <button
+            onClick={startListening}
+            className="pt-5 pb-5 mt-5 mb-5 text-xs h-32 w-32 md:w-32 md:text-base lg:w-48 bg-green-500 hover:bg-red-500 text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline"
+          >
             🎤 Dictate
           </button>
         </div>}

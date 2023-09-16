@@ -6,7 +6,6 @@ import { useState, useEffect } from 'react';
 
 import Image from 'next/image'
 
-import panthaliaLogo from '/public/panthalia-logo-2.png'
 import Spinner from '../../utils/spinner'
 
 import { useSession } from 'next-auth/react';
@@ -451,13 +450,6 @@ export default function EditPostPage({ params }) {
       <Header />
       <main className={styles.main}>
         <div className="w-full flex flex-wrap items-center justify-center mt-12">
-          <Image
-            src={panthaliaLogo}
-            alt="Panthalia"
-            width={250}
-            height={250}
-            className="mt-4 mb-12"
-          />
           <EditPost post={post} />
         </div>
       </main>

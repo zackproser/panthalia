@@ -176,14 +176,7 @@ export default function Home() {
     <>
       <Header />
       <main className={styles.main}>
-        <div className="flex flex-wrap items-center justify-center mt-12">
-          <Image
-            src={panthaliaLogo}
-            alt="Panthalia"
-            width={350}
-            height={350}
-            className="mt-4 mb-12"
-          />
+        <div className="w-full flex flex-wrap items-center justify-center mt-12">
           <NewPostForm />
         </div>
       </main>
