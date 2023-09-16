@@ -8,6 +8,8 @@ import {
 import { join } from 'path';
 import fs from 'fs'
 
+import { Readable } from 'stream'
+
 import { clonePath } from '../lib/git'
 
 const client = new S3Client({});
@@ -23,8 +25,6 @@ async function downloadImageFromS3(imageKey: string): Promise<void> {
   // and using the /tmp directory
   fs.closeSync(fs.openSync(imageFilepath, 'w'));
 
-  const file = fs.createWriteStream(imageFilepath, { flags: 'w' });
-
   const params = {
     Bucket: process.env.S3_BUCKET_NAME,
     Key: imageKey
@@ -33,21 +33,34 @@ async function downloadImageFromS3(imageKey: string): Promise<void> {
   const command = new GetObjectCommand(params);
 
   try {
-    const data = await client.send(command);
+    const response = await client.send(command);
 
-    if (!data.Body) {
+    if (!response.Body) {
       throw new Error(`S3 download image error: ${imageKey} not found`);
     }
 
-    const readableStream: ReadableStream = data.Body!.transformToWebStream()
-    await readableStream.pipeTo(file as any).then(() => {
-      console.log(`downloadImageFromS3 - Downloaded image from S3: ${imageKey}`);
+    return new Promise((resolve, reject) => {
+
+      // Convert the response to a readable stream
+      const readableStream = response.Body as Readable;
+      const stream = readableStream.pipe(fs.createWriteStream(imageFilepath));
+      // Reject the promise on stream error
+      stream.on('error', (err) => {
+        console.error(`S3 download image error: %o`, err);
+        reject();
+      })
+      // Resolve the promise on stream finish, which allows for writing the entire file locally 
+      // so that it can be committed
+      stream.on('finish', () => {
+        console.log(`downloadImageFromS3 - Downloaded image from S3: ${imageKey}`);
+        resolve();
+      })
+
     })
 
   } catch (err) {
     console.error(`S3 download image error: %o`, err);
   }
-
 }
 
 export async function downloadImagesFromS3(urls: string[]) {
@@ -72,7 +85,7 @@ export async function uploadImageToS3(url: string, key: string): Promise<string>
   // Fetch the image from the URL
   const response = await fetch(url);
 
-  // Convert the image data to a Buffer
+  //Convert the image data to a Buffer
   const arrayBuffer = await response.arrayBuffer()
   const buffer = Buffer.from(arrayBuffer);
 
