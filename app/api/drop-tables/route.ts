@@ -4,8 +4,6 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from "next-auth/next"
 import { authOptions } from '../../lib/auth/options'
 
-// TODO - put some kind of confirmation flow in front of this route!
-
 export async function GET() {
 
   // Bounce the request if the user is not authenticated

@@ -31,6 +31,8 @@ export async function POST(request: Request) {
   console.log(`Got output from calling replicate API: %o`, output)
   const stableDiffusionImageURL = (Array.isArray(output) && output.length > 0) ? output[0] : undefined
 
+  // TODO - need to handle edit update workflow - user regens a new image from the edit page 
+  // should be an INSERT instead of an update 
   if (typeof stableDiffusionImageURL !== undefined) {
     const s3UploadPath = panthaliaImg.getBucketObjectKey()
     console.log(`slugified s3UploadPath: %o`, s3UploadPath)
