@@ -98,63 +98,64 @@ export async function startGitPostUpdates(post: Post) {
 }
 
 export async function updatePostWithOpenPR(updatedPost: Post) {
-  console.log(`updatedPost data submitted to updatePostWithOpenPR function: %o`, updatedPost)
+  try {
+    console.log(`updatedPost data submitted to updatePostWithOpenPR function: %o`, updatedPost);
 
-  // Ensure the post has an associated branchName 
-  if (updatedPost.gitbranch === '') {
-    console.log('updatedPost missing git branch information - cannot update existing PR')
-    return
-  }
-
-  // Clone the repo and checkout the same branch associated with the open PR
-  // We'll always need to re-clone the repo each time due to the nature of the ephemeral 
-  // serverless environment the "backend" / Vercel functions are running in 
-  const cloneUrl = await cloneRepoAndCheckoutBranch(updatedPost.gitbranch, true);
-  if (!cloneUrl) {
-    console.log('Failed to clone repo and checkout branch');
-    return NextResponse.json({ success: false, reason: "Failed to clone repo" }, { status: 500 });
-  }
-  console.log(`cloneUrl: ${cloneUrl}`);
-
-  // If the post has at least one image, use the image as the leader image which will render on the blog index page
-  const imagesResult = await sql`
-    select * from images 
-    where post_id = ${updatedPost.id}
-    and error IS NULL 
-  `
-
-  let images: PanthaliaImage[] = [];
-
-  if (imagesResult.rows.length > 0) {
-    // Gather up the current images and convert them to PanthaliaImages, as expected by the generatePostContent
-    for (const imageRow of imagesResult.rows) {
-      const promptText = imageRow.prompt_text
-      const panthaliaImage = new PanthaliaImage({ promptText });
-      images.push(panthaliaImage);
+    // Ensure the post has an associated branchName
+    if (updatedPost.gitbranch === '') {
+      console.log('updatedPost missing git branch information - cannot update existing PR');
+      return { success: false, reason: "Missing git branch information" };
     }
+
+    // Clone the repo and checkout the same branch associated with the open PR
+    const cloneUrl = await cloneRepoAndCheckoutBranch(updatedPost.gitbranch, true);
+    if (!cloneUrl) {
+      console.log('Failed to clone repo and checkout branch');
+      return { success: false, reason: "Failed to clone repo" };
+    }
+    console.log(`cloneUrl: ${cloneUrl}`);
+
+    // Fetch images related to the post
+    const imagesResult = await sql`
+      select * from images
+      where post_id = ${updatedPost.id}
+      and error IS NULL
+    `;
+
+    let images: PanthaliaImage[] = [];
+
+    if (imagesResult.rows.length > 0) {
+      for (const imageRow of imagesResult.rows) {
+        const promptText = imageRow.prompt_text;
+        const panthaliaImage = new PanthaliaImage({ promptText });
+        images.push(panthaliaImage);
+      }
+    }
+
+    // Generate post content
+    const postContent = await generatePostContent(
+      updatedPost.title,
+      updatedPost.summary,
+      updatedPost.content,
+      images
+    );
+
+    // Define the post file path
+    const postFilePath = `src/pages/blog/${updatedPost.slug}.mdx`;
+
+    // Update post file in repo with new content
+    fs.writeFileSync(path.join(cloneUrl, postFilePath), postContent);
+
+    // Commit the update and push it on the existing branch
+    const update = true;
+    await commitAndPush(updatedPost.gitbranch, updatedPost.title, update);
+
+    return { success: true };
+
+  } catch (error) {
+    console.log(`updatePostWithOpenPR error: ${JSON.stringify(error, null, 2)}`);
+    return { success: false, error };
   }
-
-  // Generate post content
-  const postContent = await generatePostContent(
-    updatedPost.title,
-    updatedPost.summary,
-    updatedPost.content,
-    images
-  );
-
-  console.log(`postContent: ${postContent}`);
-
-
-  // Write updated post file 
-  const postFilePath = `src/pages/blog/${updatedPost.slug}.mdx`;
-  console.log(`postFilePath: ${postFilePath}`);
-
-  // Update post file in repo with new content
-  fs.writeFileSync(path.join(cloneUrl, postFilePath), postContent)
-
-  // Commit the update and push it on the existing branch 
-  const update = true
-  await commitAndPush(updatedPost.gitbranch, updatedPost.title, update);
 }
 
 export async function processPost(newPost: Post) {

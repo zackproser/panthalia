@@ -10,19 +10,18 @@ import {
 export async function POST(request: Request) {
 
   try {
-
     console.log('git POST route hit...')
-
     const newPost: Post = await request.json()
-
     console.log(`newPost data submitted /api/git: %o`, newPost)
 
     // Intentionally fire and forget the post processing routine
     await processPost(newPost).then(() => {
       console.log('post processing complete')
     }).catch((error) => {
-      console.log(`post processing error: ${error}`)
+      console.log(`post processing error: ${JSON.stringify(error, null, 2)}`);
     })
+
+    console.log('Returned from processPost')
 
     return NextResponse.json({ success: true }, { status: 200 });
 
