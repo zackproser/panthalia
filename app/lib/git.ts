@@ -13,53 +13,48 @@ export function slugifyTitle(title: string): string {
 }
 
 export async function cloneRepoAndCheckoutBranch(branchName: string, update: boolean = false) {
+  try {
+    console.log(`Cloning portfolio repo...`);
 
-  console.log(`Cloning portfolio repo...`);
+    // Blow away any previous clones 
+    await wipeClone(clonePath);
 
-  // Blow away any previous clones 
-  await wipeClone(clonePath);
-
-  await git.clone({
-    fs,
-    http,
-    dir: clonePath,
-    url: 'https://github.com/zackproser/portfolio.git'
-  }).then(() => {
-    console.log('Repo successfully cloned.')
-  }).catch((err: Error) => {
-    console.log(`error during git clone operations: ${err}`);
-  })
-
-  if (update) {
-    // Checkout the existing branch
-    await git.checkout({
+    // Clone the repo
+    await git.clone({
       fs,
+      http,
       dir: clonePath,
-      ref: branchName,
-    }).then(() => {
+      url: 'https://github.com/zackproser/portfolio.git'
+    });
+
+    console.log('Repo successfully cloned.');
+
+    if (update) {
+      // Checkout the existing branch
+      await git.checkout({
+        fs,
+        dir: clonePath,
+        ref: branchName,
+      });
+
       console.log(`Successfully checked out branch: ${branchName}`);
-    }).catch((err: Error) => {
-      console.log(`error during git checkout operations: ${err}`);
-    })
+    } else {
+      // Create a new branch
+      await git.branch({
+        fs,
+        dir: clonePath,
+        ref: branchName,
+        checkout: true,
+      });
 
-  } else {
-
-    // Create a new branch
-    await git.branch({
-      fs,
-      dir: clonePath,
-      ref: branchName,
-      checkout: true,
-    }).then(() => {
       console.log(`Successfully created new branch: ${branchName}`);
-      return clonePath
-    }).catch((err: Error) => {
-      console.log(`error creating new branch: ${err}`);
-      return ''
-    })
-  }
+    }
 
-  return clonePath
+    return clonePath;
+  } catch (err) {
+    console.log(`Error during git operations: ${err}`);
+    return null;
+  }
 }
 
 export async function commitAndPush(branchName: string, title: string, update: boolean) {
