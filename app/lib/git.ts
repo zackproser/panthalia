@@ -112,8 +112,11 @@ export async function commitAndPush(branchName: string, title: string, update: b
 }
 
 export async function wipeClone(clonePath: string) {
+  console.log('wipeClone running...')
   if (fs.existsSync(clonePath)) {
     console.log('Removing existing clone directory...');
     await rmdir(clonePath, { recursive: true });
+  } else {
+    console.log('No clone directory to remove...');
   }
 }
