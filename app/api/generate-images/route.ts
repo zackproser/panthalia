@@ -1,3 +1,5 @@
+export const maxDuration = 240; // This function can run for a maximum of 240 seconds
+
 import { NextResponse } from 'next/server';
 import Replicate from "replicate";
 import { uploadImageToS3 } from '../../lib/s3';
