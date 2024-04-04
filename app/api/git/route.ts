@@ -1,3 +1,5 @@
+export const maxDuration = 240; // This function can run for a maximum of 240 seconds
+
 import { NextResponse } from 'next/server';
 
 import Post from '../../types/posts';
