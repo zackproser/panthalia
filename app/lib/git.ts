@@ -14,17 +14,22 @@ export function slugifyTitle(title: string): string {
 
 export async function cloneRepoAndCheckoutBranch(branchName: string, update: boolean = false) {
   try {
-    console.log(`Cloning portfolio repo...`);
 
     // Blow away any previous clones 
     await wipeClone(clonePath);
 
     // Clone the repo
+    console.log(`Cloning portfolio repo...`);
+
     await git.clone({
       fs,
       http,
       dir: clonePath,
-      url: 'https://github.com/zackproser/portfolio.git'
+      url: 'https://github.com/zackproser/portfolio.git',
+      // Only clone the main branch
+      singleBranch: true,
+      // Only get the latest commit - not the fully git history which takes forever
+      depth: 1,
     });
 
     console.log('Repo successfully cloned.');
