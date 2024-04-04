@@ -210,7 +210,7 @@ export async function processPost(newPost: Post) {
   console.log(`postContent: ${postContent}`);
 
   // Write post file
-  const postFilePath = `src/pages/blog/${slugifiedTitle}.mdx`;
+  const postFilePath = `src/app/blog/${slugifiedTitle}.mdx`;
   console.log(`postFilePath: ${postFilePath}`);
 
   // Write the post content to the expected path to add it as a blog post in my portfolio project
