@@ -118,7 +118,7 @@ export class PanthaliaImage {
   }
 
   getImageVariableName(): string {
-    return `${this.toCamelCase(this.key)}Image`;
+    return `${this.toCamelCase(this.key ?? 'Unknown')}Image`;
   }
 
   getImportStatement(): string {
