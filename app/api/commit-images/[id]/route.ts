@@ -1,3 +1,5 @@
+export const maxDuration = 240; // This function can run for a maximum of 240 seconds
+
 import { NextResponse } from 'next/server'
 import { getServerSession } from "next-auth/next"
 import { authOptions } from '../../../lib/auth/options'
