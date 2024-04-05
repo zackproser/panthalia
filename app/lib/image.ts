@@ -42,12 +42,16 @@ export async function startImageGeneration(postId: number) {
     console.log(`startImageGeneration requesting image prompt: %o`, prompt);
 
     try {
-      fetch(`${baseUrl}/api/generate-images`, {
+      await fetch(`${baseUrl}/api/generate-images`, {
         headers: {
           'Content-Type': 'application/json',
         },
         method: 'POST',
         body: JSON.stringify(prompt),
+      }).then((response: Response) => {
+        if (response.ok) {
+          console.log(`startImageGeneration: successfully requested image generation for prompt %o`, prompt);
+        }
       }).catch((error: Error) => {
         console.log(`error requesting image generation for prompt %o ${error}`, prompt);
       }).finally(() => {

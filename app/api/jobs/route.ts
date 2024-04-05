@@ -7,7 +7,7 @@ export async function POST(request: Request) {
 
   const newPost = await request.json() as Post;
 
-  startImageGeneration(newPost.id)
+  await startImageGeneration(newPost.id)
 
   await processPost(newPost)
     .then(() => console.log('Post processing complete'))
