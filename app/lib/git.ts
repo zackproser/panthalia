@@ -14,7 +14,6 @@ export function slugifyTitle(title: string): string {
 
 export async function cloneRepoAndCheckoutBranch(branchName: string, update: boolean = false) {
   try {
-
     // Blow away any previous clones 
     await wipeClone(clonePath);
 
@@ -26,15 +25,29 @@ export async function cloneRepoAndCheckoutBranch(branchName: string, update: boo
       http,
       dir: clonePath,
       url: 'https://github.com/zackproser/portfolio.git',
-      // Only clone the main branch
       singleBranch: true,
-      // Only get the latest commit - not the fully git history which takes forever
       depth: 1,
+      ref: update ? branchName : 'main',  // If updating, try to clone the specific branch, fall back to 'main' otherwise
     });
 
     console.log('Repo successfully cloned.');
 
     if (update) {
+      // Check if the branch already exists locally, if not, fetch it
+      const localBranches = await git.listBranches({ fs, dir: clonePath });
+      if (!localBranches.includes(branchName)) {
+        console.log(`Branch ${branchName} not found locally. Fetching...`);
+        await git.fetch({
+          fs,
+          http,
+          dir: clonePath,
+          ref: branchName,
+          depth: 1,
+          singleBranch: true,
+          onAuth: () => ({ username: 'git', password: process.env.GITHUB_TOKEN }),
+        });
+      }
+
       // Checkout the existing branch
       await git.checkout({
         fs,
@@ -61,6 +74,7 @@ export async function cloneRepoAndCheckoutBranch(branchName: string, update: boo
     return null;
   }
 }
+
 
 export async function commitAndPush(branchName: string, title: string, update: boolean) {
 
