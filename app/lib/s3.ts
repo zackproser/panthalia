@@ -79,29 +79,33 @@ export async function downloadImagesFromS3(urls: string[]) {
 }
 
 export async function uploadImageToS3(imageData: string, key: string): Promise<string> {
-  console.log(`uploadImageToS3 - Uploading image to S3: key: ${key}`);
+  try {
+    console.log(`uploadImageToS3 - Uploading image to S3: key: ${key}`);
 
-  const buffer = Buffer.from(imageData, 'base64');
+    const base64Data = imageData.replace(/^data:image\/\w+;base64,/, '');
+    const buffer = Buffer.from(base64Data, 'base64');
 
-  const params = {
-    Bucket: process.env.S3_BUCKET_NAME,
-    Key: key,
-    Body: buffer,
-    ContentType: 'image/png',
-  };
+    const params = {
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: key,
+      Body: buffer,
+      ContentType: 'image/png', // Consider dynamically determining this based on the image data
+    };
 
-  const command = new PutObjectCommand(params);
-  const putResponse = await client.send(command);
+    const command = new PutObjectCommand(params);
+    const putResponse = await client.send(command);
 
-  return new Promise((resolve, reject) => {
     console.log(`putResponse HTTP status code: ${putResponse.$metadata.httpStatusCode}`);
 
     if (putResponse.$metadata.httpStatusCode !== 200) {
-      reject('');
+      throw new Error(`Failed to upload image to S3. HTTP status code: ${putResponse.$metadata.httpStatusCode}`);
     }
 
-    resolve(`https://${process.env.S3_BUCKET_NAME}.s3.us-east-1.amazonaws.com/${key}`);
-  });
+    return `https://${process.env.S3_BUCKET_NAME}.s3.us-east-1.amazonaws.com/${key}`;
+  } catch (error) {
+    console.error(`Error uploading image to S3: ${error}`);
+    throw error; // Rethrow to allow the caller to handle the error appropriately
+  }
 }
 
 export async function deleteImageFromS3(key: string) {

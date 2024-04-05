@@ -1,12 +1,18 @@
 import path from 'path';
 import fs from 'fs';
 
+import git from 'isomorphic-git';
+import http from 'isomorphic-git/http/node';
+
+import {
+  cloneRepo,
+  wipeClone
+} from './git';
+
 import { sql } from '@vercel/postgres';
 import { Octokit } from "octokit";
 import { RestEndpointMethodTypes } from "@octokit/plugin-rest-endpoint-methods";
 import { PanthaliaImage } from '../types/images';
-import { NextResponse } from 'next/server';
-
 
 import Post from '../types/posts'
 import { generatePostContent } from '../utils/posts';
@@ -21,7 +27,7 @@ type GetResponseType = RestEndpointMethodTypes["pulls"]["create"]["response"];
 // Octokit is the GitHub API client (used for opening pull requests)
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
-const maxRetries = 5;
+const maxRetries = 10;
 
 export async function waitForBranch(owner: string, repo: string, branch: string) {
   console.log(`waitForBranch: waiting for branch: ${branch} on ${owner}/${repo}`);
@@ -49,30 +55,6 @@ export async function waitForBranch(owner: string, repo: string, branch: string)
   }
 
   throw new Error('Timeout waiting for branch')
-}
-
-
-export async function startGitProcessing(post: Post) {
-  console.log(`startGitProcessing: %o`, post);
-
-  const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
-
-  try {
-    await fetch(`${baseUrl}/api/git`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-      body: JSON.stringify(post),
-    }).then(() => {
-      console.log(`Finished initial git operations`)
-
-    }).catch((err) => {
-      console.log(`Error during initial git operations: ${err}`)
-    })
-  } catch (error) {
-    console.log(`error: ${error}`);
-  }
 }
 
 export async function startGitPostUpdates(post: Post) {
@@ -108,7 +90,7 @@ export async function updatePostWithOpenPR(updatedPost: Post) {
     }
 
     // Clone the repo and checkout the same branch associated with the open PR
-    const cloneUrl = await cloneRepoAndCheckoutBranch(updatedPost.gitbranch, true);
+    const cloneUrl = await cloneRepoAndCheckoutBranch(updatedPost.gitbranch);
     if (!cloneUrl) {
       console.log('Failed to clone repo and checkout branch');
       return { success: false, reason: "Failed to clone repo" };
@@ -141,46 +123,96 @@ export async function updatePostWithOpenPR(updatedPost: Post) {
     );
 
     // Define the post file path
-    const postFilePath = `src/pages/blog/${updatedPost.slug}.mdx`;
+    // For my blog posts the path is src/pages/blog/[slug]/[slug].mdx where [slug] is the slugified title
+    const postFilePath = `src/pages/blog/${updatedPost.slug}/${updatedPost.slug}.mdx`;
 
     // Update post file in repo with new content
     fs.writeFileSync(path.join(cloneUrl, postFilePath), postContent);
 
     // Commit the update and push it on the existing branch
-    const update = true;
-    await commitAndPush(updatedPost.gitbranch, updatedPost.title, update);
+    await commitAndPush(updatedPost.gitbranch, updatedPost.title);
 
     return { success: true };
 
   } catch (error) {
-    console.log(`updatePostWithOpenPR error: ${JSON.stringify(error, null, 2)}`);
+    console.log(`updatePostWithOpenPR error: %o`, error);
     return { success: false, error };
   }
 }
 
-export async function processPost(newPost: Post) {
+async function createNewBranchForPost(newPost: Post): Promise<string | null> {
+  try {
 
-  console.log(`newPost data submitted to processPost function: %o`, newPost)
+    // Blow away any pre-existing clones of the repository
+    await wipeClone();
 
-  const slugifiedTitle = slugifyTitle(newPost.title);
+    // We have to start out by cloning the repository
+    await cloneRepo();
 
-  // The branch name for a given post is determined one time and then stored in the database for future reference
-  // All subsequent times the branch name is needed it can be fetched from the database
-  const branchName = `panthalia-${slugifiedTitle}-${Date.now()}`
+    const slugifiedTitle = slugifyTitle(newPost.title);
+    // The branch name for a given post is determined one time and then stored in the database for future reference
+    // All subsequent times the branch name is needed it can be fetched from the database
+    const branchName = `panthalia-${slugifiedTitle}-${Date.now()}`
 
-  // Update the post record with the generated branch name and the slug
-  const addBranchResult = await sql`
+    await git.branch({
+      fs,
+      dir: process.env.CLONE_PATH,
+      ref: branchName,
+      checkout: true
+    });
+
+    console.log(`Created new branch: ${branchName}`);
+
+    // Push the branch to the remote repo
+    await git.push({
+      fs,
+      http,
+      dir: process.env.CLONE_PATH,
+      remote: 'origin',
+      ref: branchName,
+      force: true,
+      onAuth: () => ({ username: 'git', password: process.env.GITHUB_TOKEN }),
+    }).then(() => {
+      console.log(`Successfully pushed new git branch: ${branchName}.`);
+    }).catch((err: Error) => {
+      console.log(`createNewBranchForPost: error during git push operation: ${err}`);
+      console.log(`error: %o`, err);
+    })
+
+    // Because we're dealing with GitHub, we also need to handle propagation delays
+    // waitForBranch implements exponential backoff to repeatedly request the branch from GitHub's API
+    // Until the branch is available in GitHub, the subsequent open pull request operation will fail
+    await waitForBranch('zackproser', 'portfolio', branchName)
+
+    // If pushing the branch succeeded, update Panthalia's database to associate the branch with
+    // the new post
+    const addBranchResult = await sql`
       UPDATE posts
       SET 
         gitbranch = ${branchName},
         slug = ${slugifiedTitle}
       WHERE id = ${newPost.id}
     `
-  console.log(`Result of updating post with gitbranch: %o`, addBranchResult);
+    console.log(`Result of updating post with gitbranch: %o`, addBranchResult);
 
-  // Clone my portfolio repository from GitHub so we can add the post to it
-  const cloneUrl = await cloneRepoAndCheckoutBranch(branchName);
-  console.log(`cloneUrl: ${cloneUrl}`);
+    return branchName;
+  } catch (error) {
+    console.log(`error creating new branch: ${error}`);
+    return null;
+  }
+}
+
+export async function processPost(newPost: Post): Promise<boolean> {
+
+  console.log(`newPost data submitted to processPost function: %o`, newPost)
+
+  const slugifiedTitle = slugifyTitle(newPost.title);
+
+  const branchName = await createNewBranchForPost(newPost);
+  if (!branchName) {
+    console.log(`createNewBranchForPost failed`);
+    return false;
+  }
 
   // If the post has at least one image, use the image as the leader image which will render on the blog index page
   const imagesResult = await sql`
@@ -207,55 +239,52 @@ export async function processPost(newPost: Post) {
     newPost.content,
     images
   );
-  console.log(`postContent: ${postContent}`);
 
-  // Write post file
-  const postFilePath = `src/app/blog/${slugifiedTitle}.mdx`;
+  // Create containing folder 
+  fs.mkdirSync(path.join(process.env.CLONE_PATH, 'src/app/blog', slugifiedTitle), { recursive: true });
+
+  // Write post file - for my blog posts, the format is src/app/blog/[slug]/[slug].mdx where slug is the slugified title
+  const postFilePath = `src/app/blog/${slugifiedTitle}/${slugifiedTitle}.mdx`;
   console.log(`postFilePath: ${postFilePath}`);
 
   // Write the post content to the expected path to add it as a blog post in my portfolio project
-  fs.writeFileSync(path.join(cloneUrl, postFilePath), postContent)
+  fs.writeFileSync(path.join(process.env.CLONE_PATH, postFilePath), postContent)
 
   // Add new blog post and make an initial commit
-  const update = false
-  await commitAndPush(branchName, newPost.title, update);
+  await commitAndPush(branchName, newPost.title);
 
+  await createPullRequest(branchName, newPost);
+
+  return false;
+}
+
+export async function createPullRequest(branchName: string, newPost: Post) {
   const prTitle = `Add blog post: ${newPost.title}`;
   const baseBranch = 'main'
   const body = `
       This pull request was programmatically opened by Panthalia (github.com/zackproser/panthalia)
     `
-  const pullRequestURL = await createPullRequest(prTitle, branchName, baseBranch, body);
-
-  // Associate the pull request URL with the post 
-  const addPrResult = await sql`
-      UPDATE posts
-      SET githubpr = ${pullRequestURL}
-      WHERE id = ${newPost.id}
-    `
-
-  console.log(`Result of updating post with githuburl: %o`, addPrResult);
-  return
-}
-
-
-export async function createPullRequest(title: string, head: string, base: string, body: string) {
-
   console.log(`createPullRequest running...`)
 
   try {
     const response: GetResponseType = await octokit.rest.pulls.create({
       owner: "zackproser",
       repo: "portfolio",
-      title,
-      head,
-      base,
+      title: prTitle,
+      head: branchName,
+      base: baseBranch,
       body
     });
 
     console.log(`Pull request URL: %s`, response.data.html_url);
 
-    return response.data.html_url
+    // Associate the pull request URL with the post 
+    const addPrResult = await sql`
+      UPDATE posts
+      SET githubpr = ${response.data.html_url}
+      WHERE id = ${newPost.id}
+    `
+    console.log(`Result of updating post with githuburl: %o`, addPrResult);
 
   } catch (error) {
 

@@ -31,6 +31,10 @@ export async function POST(request: Request) {
 
     const uploadedImageS3Path = await uploadImageToS3(imageData, s3UploadPath);
 
+    console.log(`uploadedImageS3Path: ${uploadedImageS3Path}`);
+    // Log the values used in the SQL query
+    console.log(`SQL Parameters: UploadedImageS3Path: ${uploadedImageS3Path}, Prompt Text: ${prompt.text}, Post ID: ${prompt.postId}`);
+
     let result: QueryResultRow;
 
     if (prompt.regen) {
@@ -49,6 +53,7 @@ export async function POST(request: Request) {
     console.log(`Result of saving S3 image URL to images table: %o for post_id: ${prompt.postId}`, result);
 
     return NextResponse.json({ success: true });
+
   } catch (error) {
     console.error(`Error generating image via prompt: ${prompt.text}`, error);
 

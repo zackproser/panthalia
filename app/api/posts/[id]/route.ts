@@ -1,7 +1,7 @@
 import { sql } from '@vercel/postgres';
 import { NextResponse } from 'next/server';
 
-import { startGitPostUpdates } from '../../../lib/github';
+import { updatePostWithOpenPR } from '../../../lib/github';
 
 import Post from '../../../types/posts';
 import { PanthaliaImage } from '../../../types/images';
@@ -131,7 +131,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     // And which we treat as a const - we don't want it to change, so that multiple functions can always resolve the same filepaths, etc
     const fullPostRecord: Post = result.rows[0] as Post;
 
-    await startGitPostUpdates(fullPostRecord)
+    await updatePostWithOpenPR(fullPostRecord)
 
     return NextResponse.json({ post: result.rows[0] }, { status: 200 });
 
