@@ -94,92 +94,93 @@ function NewPostForm() {
 
   return (
     <>
-      <SpeechToText content={content} updateFunc={setContent} />
-      <form onSubmit={submitForm} className="new-post-form w-full mb-4">
-        <div className="w-full mb-4">
-          <label className="font-semibold text-lg">Title:</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full border-rounded p-2 border"
-          />
+      <Header />
+      <main className={styles.main}>
+        <div className="w-full max-w-3xl mx-auto px-4 py-8">
+          <h1 className="text-3xl font-bold mb-8 mt-12 text-emerald-700">Create New Post</h1>
+          <SpeechToText content={content} updateFunc={setContent} />
+          <form onSubmit={submitForm} className="space-y-6">
+            <div>
+              <label htmlFor="title" className="block font-medium">Title</label>
+              <input
+                type="text"
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              />
+            </div>
+            <div>
+              <label htmlFor="summary" className="block font-medium">Summary</label>
+              <textarea
+                id="summary"
+                value={summary}
+                onChange={(e) => setSummary(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                rows={3}
+              />
+            </div>
+            <div>
+              <label htmlFor="content" className="block font-medium">Content</label>
+              <MDEditor value={content} onChange={setContent} />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold mb-2">Image Prompts</h2>
+              {imagePrompts.map((prompt, index) => (
+                <div key={index} className="mb-4">
+                  <label htmlFor={`prompt-${index}`} className="block font-medium">Prompt {index + 1}</label>
+                  <div className="mt-1 flex items-center">
+                    <input
+                      type="text"
+                      id={`prompt-${index}`}
+                      value={prompt.text}
+                      onChange={(e) => updateImagePrompt(index, e.target.value)}
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    />
+                    {index === imagePrompts.length - 1 && (
+                      <button
+                        type="button"
+                        onClick={addImagePrompt}
+                        className="ml-2 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        +
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-end">
+              <Link href="/">
+                <button
+                  type="button"
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                >
+                  Cancel
+                </button>
+              </Link>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="ml-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                {submitting ? (
+                  <>
+                    <span>Creating Post...</span>
+                    <Spinner />
+                  </>
+                ) : (
+                  'Create Post'
+                )}
+              </button>
+            </div>
+          </form>
         </div>
-        <div className="flex flex-col space-y-2">
-          <label className="font-semibold text-lg">Summary:</label>
-          <textarea
-            value={summary}
-            onChange={(e) => setSummary(e.target.value)}
-            className="p-2 border rounded h-20"
-          />
-        </div>
-        <div className="flex flex-col space-y-2">
-          <label className="font-semibold text-lg">Content:</label>
-          <MDEditor value={content} onChange={setContent} />
-        </div>
-        {imagePrompts.map((prompt, index) => (
-          <div key={index} className="flex flex-col space-y-2">
-            <label className="font-semibold text-lg">Image Prompt {index + 1}:</label>
-            <input
-              type="text"
-              value={prompt.text}
-              onChange={(e) => updateImagePrompt(index, e.target.value)}
-              className="p-2 border rounded"
-            />
-          </div>
-        ))}
-        <div className="flex justify-center space-x-4 mt-12 mb-4">
-
-
-          <Link
-            href={"/"}
-          >
-            <button
-              type="button"
-              className="px-4 py-2 bg-blue-300 text-white rounded hover:bg-blue-600"
-            >
-              Posts
-            </button>
-          </Link>
-
-          <button
-            type="button"
-            onClick={addImagePrompt}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Add Image Prompt
-          </button>
-
-          <button
-            disabled={submitting}
-            type="submit"
-            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-          >
-            {submitting ? (
-              <>
-                <span>Spreading the seeds...</span>
-                <Spinner />
-              </>
-            ) : (
-              'Create Post'
-            )}
-          </button>
-        </div>
-      </form >
+      </main>
     </>
   );
 }
 
-
 export default function Home() {
-  return (
-    <>
-      <Header />
-      <main className={styles.main}>
-        <div className="w-full flex flex-wrap items-center justify-center mt-12">
-          <NewPostForm />
-        </div>
-      </main>
-    </>
-  )
+  return <NewPostForm />;
 }
