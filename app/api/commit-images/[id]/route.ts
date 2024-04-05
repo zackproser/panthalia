@@ -54,17 +54,16 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     `
     const branchName = postResult.rows[0].gitbranch
     const postTitle = postResult.rows[0].title
-    const update = true
 
     // Before we can download the images we need a fresh clone of the repo 
-    await cloneRepoAndCheckoutBranch(branchName, update)
+    await cloneRepoAndCheckoutBranch(branchName)
 
     console.log(`imageUrls prior to downloading from S3: ${imageUrls}`)
 
     await downloadImagesFromS3(imageUrls)
 
     // Commit and push
-    await commitAndPush(branchName, postTitle, update);
+    await commitAndPush(branchName, postTitle);
 
     return NextResponse.json({ success: true }, { status: 200 })
 
