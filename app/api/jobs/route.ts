@@ -3,6 +3,8 @@ import { processPost } from '../../lib/github';
 import { startImageGeneration } from '../../lib/image';
 import Post from "../../types/posts";
 
+export const maxDuration = 300; // Allow this route to run for up to 5 minutes
+
 export async function POST(request: Request) {
 
   const newPost = await request.json() as Post;
