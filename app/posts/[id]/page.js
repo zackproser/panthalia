@@ -1,19 +1,13 @@
 'use client';
 
 import styles from '../../page.module.css'
-
 import { useState, useEffect } from 'react';
-
 import Image from 'next/image'
-
 import Spinner from '../../utils/spinner'
-
 import { useSession } from 'next-auth/react';
 import Header from '../../components/header'
 import LoginButton from '../../components/login-btn'
-
 import SpeechToText from '../../components/SpeechToText'
-
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
 import dynamic from "next/dynamic";
@@ -48,7 +42,6 @@ function EditPost({ post }) {
   const [isRegenerating, setIsRegenerating] = useState({});
   // State to manage which control sections to show or hide 
   const [showImagePrompts, setShowImagePrompts] = useState(true);
-  const [showOtherButtons, setShowOtherButtons] = useState(false);
   const [showImages, setShowImages] = useState(true);
 
 
@@ -215,6 +208,9 @@ function EditPost({ post }) {
 
     setEditing(true);
 
+    // Temporarily disable this 
+    /*
+
     const updatedPost = {
       title,
       summary,
@@ -235,8 +231,8 @@ function EditPost({ post }) {
     } else {
       console.error('Error updating post');
     }
+    */
   }
-
   return (
     <>
       {showModal && (
@@ -249,155 +245,192 @@ function EditPost({ post }) {
         />
       )}
 
-      <SpeechToText content={content} updateFunc={setContent} />
 
-      <form onSubmit={handleSubmit} className="edit-post-form w-full mb-4">
-        <div className="mb-4">
-          <input
-            placeholder="Title"
-            type="text"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </div>
-
-        <div className="mb-4">
-          <input
-            placeholder="Title"
-            type="text"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline resize-none"
-            value={summary}
-            onChange={(e) => setSummary(e.target.value)}
-          />
-        </div>
-
-        <div className="w-full mb-4">
-          <MDEditor height={450} value={content} onChange={setContent} />
-        </div>
-      </form>
-
-      <div className="w-full">
-        <button onClick={() => setShowImagePrompts(!showImagePrompts)} className="mx-2 mb-2 pb-2 text-xs w-16 md:w-32 md:text-base lg:w-48 bg-green-500 hover:bg-green-700 text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline">
-          {showImagePrompts ? <EyeSlashIcon width={16} /> : <EyeIcon width={16} />} Image Prompts
-        </button>
-        {showImagePrompts && (
-          <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
-            {imagePrompts.map((prompt, index) => (
-              <div key={index} className="flex items-center space-x-2 w-full">
+      <form onSubmit={handleSubmit} className="space-y-12">
+        <div className="border-b border-grey/10 pb-12">
+          <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+            <div className="sm:col-span-4">
+              <label htmlFor="title" className="block text-lg text-2xl font-medium leading-6 text-white">
+                Title
+              </label>
+              <div className="mt-2">
                 <input
+                  id="title"
+                  name="title"
                   type="text"
-                  style={{ flex: 1 }}
-                  placeholder="Image prompt"
-                  value={prompt.text}
-                  onChange={(e) => updateImagePrompt(index, e.target.value)}
-                  className="w-full p-2 my-2 border rounded flex-grow"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="block w-full rounded-md border-0 bg-white/5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
                 />
-                <button
-                  onClick={() => {
-                    openModal({
-                      title: 'Confirm Deletion',
-                      message: 'Are you sure you want to delete this image?',
-                      onConfirm: () => handleConfirmedDelete(prompt.imageId, index),
-                    });
-                  }}
-                  className="bg-red-500 text-white px-2 py-1 rounded"
-                >
-                  <TrashIcon className="h-5 w-5" />
-                </button>
-                <button
-                  onClick={() => {
-                    openModal({
-                      title: 'Confirm Regeneration',
-                      message: `Are you sure you want to regenerate the image with prompt text: ${prompt.text}?`,
-                      onConfirm: () => handleConfirmedRegen(index, prompt.imageId, prompt.text),
-                    });
-                  }}
-                  className="bg-yellow-500 text-white px-2 py-1 rounded"
-                >
-                  {isRegenerating[index] ? <Spinner /> : <RefreshIcon className="h-5 w-5" />}
-                </button>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            </div>
 
-      <div className="w-full">
-        <button onClick={() => setShowOtherButtons(!showOtherButtons)} className="mb-2 mx-2 text-xs w-16 md:w-32 md:text-base lg:w-48 bg-green-500 hover:bg-green-700 text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline">
-          {showOtherButtons ? <EyeSlashIcon width={16} /> : <EyeIcon width={16} />} Other Buttons
-        </button>
-        {showOtherButtons && (
-          <div className="flex">
-            {/* Existing other buttons code */}
-            <button className="mx-2 text-xs w-16 md:w-32 md:text-base lg:w-48 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline" type="button" onClick={addImagePrompt}>
-              +prompt
-            </button>
+            <div className="col-span-full">
+              <label htmlFor="summary" className="block text-lg text-2xl font-medium leading-6 text-white">
+                Description
+              </label>
+              <div className="mt-2">
+                <input
+                  id="summary"
+                  name="summary"
+                  type="text"
+                  value={summary}
+                  onChange={(e) => setSummary(e.target.value)}
+                  className="block w-full rounded-md border-0 bg-white/5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
+                />
+              </div>
+            </div>
 
-            <button
-              onClick={handleSubmit}
-              disabled={editing}
-              className="mx-2 text-xs w-16 md:w-32 md:text-base lg:w-48 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline" type="submit">
-              {editing ? (
-                <>
-                  <span>Updating...</span>
-                  <Spinner />
-                </>
-              ) : (
-                'Commit changes'
-              )}
-            </button>
-
-            <button
-              className="mx-2 text-xs w-16 md:w-32 md:text-base lg:w-48 bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline"
-              disabled={commitingImages}
-              onClick={commitImages}
-            >
-              {/* Show spinner if committing images */}
-              {commitingImages && <Spinner />} Commit images to branch
-            </button>
-
-            <button
-              className="mx-2 text-xs w-16 md:w-32 md:text-base lg:w-48 bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline"
-              onClick={addNewsletterCaptureToPostBody}
-            >
-              Email capture
-            </button>
-          </div>
-        )}
-      </div>
-
-      <div className="w-full">
-        <button onClick={() => setShowImages(!showImages)} className="mt-2 mb-2 pb-2 mx-2 text-xs w-16 md:w-32 md:text-base lg:w-48 bg-green-500 hover:bg-green-700 text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline">
-          {showImages ? <EyeSlashIcon width={16} /> : <EyeIcon width={16} />} images
-        </button>
-        {showImages && (
-          <div className="mt-2">
-            <div>
-              <div className="grid grid-cols-3 gap-4">
-                {images && (images.length > 0) && images.map(image => (
-                  <div key={image.id} className="relative">
-                    <Image
-                      className="object-cover w-full rounded-md"
-                      src={image.image_url}
-                      alt={image.alt}
-                      width={550}
-                      height={550}
-                    />
-                    <button
-                      className="absolute top-0 right-0 mx-2 text-xs w-16 md:w-32 md:text-base lg:w-48 bg-green-300 hover:bg-green-400 text-white font-bold py-1 rounded"
-                      onClick={() => {
-                        addImageToPostBody(image.rendered)
-                      }}
-                    >
-                      +
-                    </button>
-                  </div>
-                ))}
+            <div className="col-span-full pt-8 pb-8">
+              <div className="mt-2">
+                <MDEditor height={450} value={content} onChange={setContent} />
               </div>
             </div>
           </div>
-        )}
+        </div>
+
+        <div className="border-b border-white/10 pb-12">
+          <h2 className="text-base font-semibold leading-7 text-white">Images</h2>
+
+          <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+            <div className="col-span-full">
+              <button
+                onClick={() => setShowImages(!showImages)}
+                className="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+              >
+                {showImages ? <EyeSlashIcon width={16} /> : <EyeIcon width={16} />} Images
+              </button>
+              {showImages && (
+                <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-3">
+                  {images && (images.length > 0) && images.map(image => (
+                    <div key={image.id} className="relative">
+                      <Image
+                        className="rounded-lg"
+                        src={image.image_url}
+                        alt={image.alt}
+                        width={550}
+                        height={550}
+                      />
+                      <button
+                        className="absolute top-0 right-0 rounded-md bg-green-500 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-green-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500"
+                        onClick={() => addImageToPostBody(image.rendered)}
+                      >
+                        +
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="border-b border-white/10 pb-12">
+          <h2 className="text-base font-semibold leading-7 text-white">Image Prompts</h2>
+
+          <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+            <div className="col-span-full">
+              <button
+                onClick={() => setShowImagePrompts(!showImagePrompts)}
+                className="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+              >
+                {showImagePrompts ? <EyeSlashIcon width={16} /> : <EyeIcon width={16} />} Image Prompts
+              </button>
+              {showImagePrompts && (
+                <div className="mt-6 space-y-6">
+                  {imagePrompts.map((prompt, index) => (
+                    <div key={index} className="flex items-center space-x-4">
+                      <input
+                        type="text"
+                        placeholder="Image prompt"
+                        value={prompt.text}
+                        onChange={(e) => updateImagePrompt(index, e.target.value)}
+                        className="block w-full rounded-md border-0 bg-white/5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
+                      />
+                      <button
+                        onClick={() => {
+                          openModal({
+                            title: 'Confirm Deletion',
+                            message: 'Are you sure you want to delete this image?',
+                            onConfirm: () => handleConfirmedDelete(prompt.imageId, index),
+                          });
+                        }}
+                        className="rounded-md bg-red-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
+                      >
+                        <TrashIcon className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          openModal({
+                            title: 'Confirm Regeneration',
+                            message: `Are you sure you want to regenerate the image with prompt text: ${prompt.text}?`,
+                            onConfirm: () => handleConfirmedRegen(index, prompt.imageId, prompt.text),
+                          });
+                        }}
+                        className="rounded-md bg-yellow-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-yellow-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-500"
+                      >
+                        {isRegenerating[index] ? <Spinner /> : <RefreshIcon className="h-5 w-5" />}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Temporarily disable this: }<div className="mt-6 flex items-center justify-end gap-x-6">
+          <button type="button" className="text-sm font-semibold leading-6 text-white">
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={editing}
+            className="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+          >
+            {editing ? (
+              <>
+                <span>Updating...</span>
+                <Spinner />
+              </>
+            ) : (
+              'Save'
+            )}
+          </button>
+        </div>
+        */}
+      </form>
+
+      <div className="mt-6 border-t border-white/10 pt-6">
+        <h2 className="text-base font-semibold leading-7 text-white">Other Controls</h2>
+
+        <div className="mt-4 flex space-x-4">
+          <SpeechToText content={content} updateFunc={setContent} />
+        </div>
+
+        <div className="mt-4 flex space-x-4">
+
+          <button
+            onClick={addImagePrompt}
+            className="rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
+          >
+            +prompt
+          </button>
+          <button
+            onClick={commitImages}
+            disabled={commitingImages}
+            className="rounded-md bg-orange-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-orange-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500"
+          >
+            {commitingImages && <Spinner />}
+            Commit images to branch
+          </button>
+          <button
+            onClick={addNewsletterCaptureToPostBody}
+            className="rounded-md bg-yellow-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-yellow-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-500"
+          >
+            Email capture
+          </button>
+        </div>
       </div>
     </>
   );
