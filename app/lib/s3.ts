@@ -78,39 +78,34 @@ export async function downloadImagesFromS3(urls: string[]) {
   }
 }
 
-// Returns a Promise which returns a string
-export async function uploadImageToS3(url: string, key: string): Promise<string> {
+export async function uploadImageToS3(imageData: string, key: string): Promise<string> {
+  try {
+    console.log(`uploadImageToS3 - Uploading image to S3: key: ${key}`);
 
-  console.log(`uploadImageToS3 - Uploading image to S3: url: ${url}, key: ${key}`);
-  // Fetch the image from the URL
-  const response = await fetch(url);
+    const base64Data = imageData.replace(/^data:image\/\w+;base64,/, '');
+    const buffer = Buffer.from(base64Data, 'base64');
 
-  //Convert the image data to a Buffer
-  const arrayBuffer = await response.arrayBuffer()
-  const buffer = Buffer.from(arrayBuffer);
+    const params = {
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: key,
+      Body: buffer,
+      ContentType: 'image/png', // Consider dynamically determining this based on the image data
+    };
 
-  // Set up the parameters for the upload
-  const params = {
-    Bucket: process.env.S3_BUCKET_NAME,
-    Key: key, // key also means filename storage path
-    Body: buffer,
-    ContentType: response.headers.get('content-type'),
-  };
+    const command = new PutObjectCommand(params);
+    const putResponse = await client.send(command);
 
-  const command = new PutObjectCommand(params);
-
-  const putResponse = await client.send(command);
-
-  return new Promise((resolve, reject) => {
-
-    console.log(`putResponse HTTP status code: ${putResponse.$metadata.httpStatusCode}`)
+    console.log(`putResponse HTTP status code: ${putResponse.$metadata.httpStatusCode}`);
 
     if (putResponse.$metadata.httpStatusCode !== 200) {
-      reject("")
+      throw new Error(`Failed to upload image to S3. HTTP status code: ${putResponse.$metadata.httpStatusCode}`);
     }
 
-    resolve(`https://${process.env.S3_BUCKET_NAME}.s3.us-east-1.amazonaws.com/${key}`)
-  })
+    return `https://${process.env.S3_BUCKET_NAME}.s3.us-east-1.amazonaws.com/${key}`;
+  } catch (error) {
+    console.error(`Error uploading image to S3: ${error}`);
+    throw error; // Rethrow to allow the caller to handle the error appropriately
+  }
 }
 
 export async function deleteImageFromS3(key: string) {

@@ -60,7 +60,7 @@ import { Newsletter } from '@/components/Newsletter'
 import Image from 'next/image'
 import Link from 'next/link'
 
-export const meta = {
+export const metadata = {
  title: "${metadata.title}",
  author: "${metadata.author}",
  date: "${metadata.date}",
@@ -68,7 +68,7 @@ export const meta = {
  image: ${metadata.image},
 } 
 
-export default (props) => <ArticleLayout meta={meta} {...props} />`
+export default (props) => <ArticleLayout metadata={metadata} {...props} />`
 
   const mdx = `
 ${imageImportMdx.trim()} 

@@ -1,8 +1,6 @@
 .main {
   display: flex;
-  background: 
-    linear-gradient(-45deg, #d5e1a1, #e1e7cd);
-
+  background-color: #111827;
   flex-direction: column;
   justify-content: space-between;
   align-items: center;

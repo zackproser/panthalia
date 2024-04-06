@@ -1,3 +1,5 @@
+export const maxDuration = 300; // Allow this serverless function to run for 5 minutes
+
 import { sql } from '@vercel/postgres';
 import { imagePrompt } from '../types/images'
 
@@ -33,19 +35,23 @@ export async function startImageGeneration(postId: number) {
     }
   }
 
-  console.log(`startImageGeneration processed the following image prompts to request from StableDiffusion: %o`, imagePrompts);
+  console.log(`startImageGeneration processed the following image prompts to request from OpenAI: %o`, imagePrompts);
 
   // For each image prompt, generate an image via the image generation endpoint 
   for (const prompt of imagePrompts) {
     console.log(`startImageGeneration requesting image prompt: %o`, prompt);
 
     try {
-      fetch(`${baseUrl}/api/generate-images`, {
+      await fetch(`${baseUrl}/api/generate-images`, {
         headers: {
           'Content-Type': 'application/json',
         },
         method: 'POST',
         body: JSON.stringify(prompt),
+      }).then((response: Response) => {
+        if (response.ok) {
+          console.log(`startImageGeneration: successfully requested image generation for prompt %o`, prompt);
+        }
       }).catch((error: Error) => {
         console.log(`error requesting image generation for prompt %o ${error}`, prompt);
       }).finally(() => {
@@ -56,5 +62,3 @@ export async function startImageGeneration(postId: number) {
     }
   }
 }
-
-

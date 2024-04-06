@@ -1,14 +1,13 @@
 import { sql } from '@vercel/postgres';
-import { NextRequest, NextResponse } from 'next/server';
-import { startGitProcessing } from '../../lib/github'
-import { startImageGeneration } from '../../lib/image'
+import { NextResponse } from 'next/server';
+import { startBackgroundJobs } from '../../lib/jobs'
 import Post from "../../types/posts";
 
 import { getServerSession } from "next-auth/next"
 import { authOptions } from '../../lib/auth/options'
-import { imagePrompt, PanthaliaImage } from '../../types/images';
+import { imagePrompt } from '../../types/images';
 
-export async function GET(req: NextRequest, res: NextResponse) {
+export async function GET() {
   console.log('GET /api/posts route hit...')
 
   // Bounce the request if the user is not authenticated
@@ -45,7 +44,7 @@ export async function POST(request: Request) {
     console.log('posts POST route hit...')
 
     const formData = await request.json()
-    console.log(`formData submitted: % o`, formData)
+    // console.log(`formData submitted: % o`, formData)
 
     const {
       title,
@@ -54,9 +53,6 @@ export async function POST(request: Request) {
       content,
       ...formImagePrompts
     } = formData
-
-    console.log(`formImagePrompts: %o`, formImagePrompts)
-    console.log(`formImagePrompts.imagePrompts: %o`, formImagePrompts.imagePrompts)
 
     // Query to insert new blog post into the database
     const result = await sql`
@@ -92,7 +88,7 @@ export async function POST(request: Request) {
 
     // Query to insert images into the database
     for (const promptToProcess of promptsToProcess) {
-      console.log(`promptToProcess: %o`, promptToProcess)
+      // console.log(`promptToProcess: %o`, promptToProcess)
 
       const imgInsertResult = await sql`
         INSERT INTO 
@@ -104,14 +100,10 @@ export async function POST(request: Request) {
           ${promptToProcess.text}
         )
       `
-      console.log(`imgInsertResult:  %o`, imgInsertResult)
     }
 
-    // Fire and forget the stable diffusion image generation routine
-    startImageGeneration(newPost.id)
-
-    // Fire and forget the post processing routine, while returning a response to the posts form quickly
-    startGitProcessing(newPost)
+    // Fire and forget the initial post setup (git operations) and the image generation tasks
+    startBackgroundJobs(newPost);
 
     return NextResponse.json({ result, success: true }, { status: 200 });
 
