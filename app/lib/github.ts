@@ -124,7 +124,7 @@ export async function updatePostWithOpenPR(updatedPost: Post) {
 
     // Define the post file path
     // For my blog posts the path is src/pages/blog/[slug]/[slug].mdx where [slug] is the slugified title
-    const postFilePath = `src/pages/blog/${updatedPost.slug}/${updatedPost.slug}.mdx`;
+    const postFilePath = `src/pages/blog/${updatedPost.slug}/page.mdx`;
 
     // Update post file in repo with new content
     fs.writeFileSync(path.join(cloneUrl, postFilePath), postContent);
@@ -244,7 +244,7 @@ export async function processPost(newPost: Post): Promise<boolean> {
   fs.mkdirSync(path.join(process.env.CLONE_PATH, 'src/app/blog', slugifiedTitle), { recursive: true });
 
   // Write post file - for my blog posts, the format is src/app/blog/[slug]/[slug].mdx where slug is the slugified title
-  const postFilePath = `src/app/blog/${slugifiedTitle}/${slugifiedTitle}.mdx`;
+  const postFilePath = `src/app/blog/${slugifiedTitle}/page.mdx`;
   console.log(`postFilePath: ${postFilePath}`);
 
   // Write the post content to the expected path to add it as a blog post in my portfolio project
