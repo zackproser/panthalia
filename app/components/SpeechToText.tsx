@@ -13,7 +13,7 @@ function SpeechToText({ content, updateFunc }) {
       <button onMouseDown={listen} onMouseUp={stop}>
         🎤 Dictate
       </button>
-      {listening && <div>Go ahead I'm listening</div>}
+      {listening && <span className="text-white">Go ahead I'm listening</span>}
     </div>
   );
 }

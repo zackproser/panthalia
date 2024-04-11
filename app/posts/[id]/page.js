@@ -7,10 +7,10 @@ import Spinner from '../../utils/spinner'
 import { useSession } from 'next-auth/react';
 import Header from '../../components/header'
 import LoginButton from '../../components/login-btn'
-import SpeechToText from '../../components/SpeechToText'
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
 import dynamic from "next/dynamic";
+import { useSpeechRecognition } from 'react-speech-kit';
 
 import {
   TrashIcon,
@@ -43,7 +43,11 @@ function EditPost({ post }) {
   // State to manage which control sections to show or hide 
   const [showImagePrompts, setShowImagePrompts] = useState(true);
   const [showImages, setShowImages] = useState(true);
-
+  const { listen, listening, stop } = useSpeechRecognition({
+    onResult: (result) => {
+      setContent(content + result);
+    },
+  })
 
   useEffect(() => {
     console.log(`useEffect is running..`);
@@ -300,7 +304,10 @@ function EditPost({ post }) {
             <div className="col-span-full pt-8 pb-8">
               <div className="mt-2">
                 <MDEditor height={450} value={content} onChange={setContent} />
-                <SpeechToText content={content} updateFunc={setContent} />
+                <button onMouseDown={listen} onMouseUp={stop}>
+                  🎤 Dictate
+                </button>
+                {listening && <span className="text-white">Go ahead I'm listening</span>}
               </div>
             </div>
           </div>
