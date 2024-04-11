@@ -177,8 +177,6 @@ function EditPost({ post }) {
     setImagePrompts(imagePrompts.filter((_prompt, i) => i !== index))
   }
 
-  console.log(`EditPost component...:% o`, post)
-
   const addImagePrompt = () => {
     if (imagePrompts.length === 0) {
       setImagePrompts([{ text: '', updateFunc: (newText) => updateImagePrompt(0, newText) }])
@@ -302,6 +300,7 @@ function EditPost({ post }) {
             <div className="col-span-full pt-8 pb-8">
               <div className="mt-2">
                 <MDEditor height={450} value={content} onChange={setContent} />
+                <SpeechToText content={content} updateFunc={(newText) => setContent(content + '\n' + newText)} />
               </div>
             </div>
           </div>
@@ -403,13 +402,6 @@ function EditPost({ post }) {
 
       <div className="mt-12 pt-6 border-t border-white/10 pt-6 w-full">
         <h2 className="text-base font-semibold leading-7 text-white">Other Controls</h2>
-
-        <div className="mt-4 flex space-x-4">
-          <div className="flex items-center space-x-4">
-            <MDEditor height={450} value={content} onChange={setContent} />
-            <SpeechToText content={content} updateFunc={(newText) => setContent(content + '\n' + newText)} />
-          </div>
-        </div>
 
         <div className="mt-4 flex space-x-4">
 
