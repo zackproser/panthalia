@@ -261,7 +261,7 @@ function EditPost({ post }) {
       )}
 
 
-      <form className="pb-6 mb-12 space-y-12 w-full">
+      <div className="pb-6 mb-12 space-y-12 w-full">
         <div className="border-b border-grey/10 pb-12">
           <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
             <div className="sm:col-span-4">
@@ -398,7 +398,7 @@ function EditPost({ post }) {
             </div>
           </div>
         </div>
-      </form>
+      </div>
 
       <div className="mt-12 pt-6 border-t border-white/10 pt-6 w-full">
         <h2 className="text-base font-semibold leading-7 text-white">Other Controls</h2>
