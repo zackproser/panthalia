@@ -181,9 +181,9 @@ function EditPost({ post }) {
 
   const addImagePrompt = () => {
     if (imagePrompts.length === 0) {
-      setImagePrompts([{ text: '' }])
+      setImagePrompts([{ text: '', updateFunc: (newText) => updateImagePrompt(0, newText) }])
     }
-    setImagePrompts([...imagePrompts, { text: '' }]);
+    setImagePrompts([...imagePrompts, { text: '', updateFunc: (newText) => updateImagePrompt(imagePrompts.length, newText) }]);
   };
 
   const addImageToPostBody = (nextImageStatement) => {
@@ -353,13 +353,16 @@ function EditPost({ post }) {
                 <div className="mt-6 space-y-6">
                   {imagePrompts.map((prompt, index) => (
                     <div key={index} className="flex items-center space-x-4">
-                      <input
-                        type="text"
-                        placeholder="Image prompt"
-                        value={prompt.text}
-                        onChange={(e) => updateImagePrompt(index, e.target.value)}
-                        className="block w-full rounded-md border-0 bg-white/5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
-                      />
+                      <div className="flex items-center space-x-4">
+                        <input
+                          type="text"
+                          placeholder="Image prompt"
+                          value={prompt.text}
+                          onChange={(e) => updateImagePrompt(index, e.target.value)}
+                          className="block w-full rounded-md border-0 bg-white/5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
+                        />
+                        <SpeechToText content={prompt.text} updateFunc={prompt.updateFunc} />
+                      </div>
                       <button
                         onClick={() => {
                           openModal({
@@ -418,7 +421,10 @@ function EditPost({ post }) {
         <h2 className="text-base font-semibold leading-7 text-white">Other Controls</h2>
 
         <div className="mt-4 flex space-x-4">
-          <SpeechToText content={content} updateFunc={setContent} />
+          <div className="flex items-center space-x-4">
+            <MDEditor height={450} value={content} onChange={setContent} />
+            <SpeechToText content={content} updateFunc={(newText) => setContent(content + '\n' + newText)} />
+          </div>
         </div>
 
         <div className="mt-4 flex space-x-4">
