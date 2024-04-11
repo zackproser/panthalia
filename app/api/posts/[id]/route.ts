@@ -112,7 +112,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     ...body
   }
 
-  console.log(`Posts PUT updatedPost: %o`, updatedPost);
+  console.log(`Posts PUT id: ${id}, updatedPost: %o`, updatedPost);
 
   try {
     const result = await sql`
