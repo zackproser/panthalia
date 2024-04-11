@@ -19,7 +19,7 @@ const SpeechToText: FC<SpeechToTextProps> = ({ content, updateFunc }) => {
   });
 
   const startListening = () => {
-    listen({ interimResults: false, lang: 'en-US' });
+    listen({ interimResults: true, lang: 'en-US' });
   }
 
   return (
