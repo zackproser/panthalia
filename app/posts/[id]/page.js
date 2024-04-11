@@ -225,7 +225,7 @@ function EditPost({ post }) {
         imagePrompts
       };
 
-      const response = await fetch(`/api/posts/${post.id}`, {
+      const response = await fetch(`/api/posts/${post.id}/content`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
