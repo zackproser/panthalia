@@ -14,7 +14,7 @@ const SpeechToText: FC<SpeechToTextProps> = ({ content, updateFunc }) => {
 
   const { listen, listening, stop } = useSpeechRecognition({
     onResult: (result: string) => {
-      updateFunc((prevContent) => prevContent + result);
+      updateFunc(content + result);
     }
   });
 
