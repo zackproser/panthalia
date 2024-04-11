@@ -1,22 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useSpeechRecognition } from 'react-speech-kit';
 
-function SpeechToText() {
-  const [value, setValue] = useState('');
+function SpeechToText({ content, updateFunc }) {
   const { listen, listening, stop } = useSpeechRecognition({
     onResult: (result) => {
-      setValue(result);
+      updateFunc(content + '\n' + result);
     },
   });
 
   return (
     <div>
-      <textarea
-        value={value}
-        onChange={(event) => setValue(event.target.value)}
-      />
       <button onMouseDown={listen} onMouseUp={stop}>
-        🎤
+        🎤 Dictate
       </button>
       {listening && <div>Go ahead I'm listening</div>}
     </div>

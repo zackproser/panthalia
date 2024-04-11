@@ -300,7 +300,7 @@ function EditPost({ post }) {
             <div className="col-span-full pt-8 pb-8">
               <div className="mt-2">
                 <MDEditor height={450} value={content} onChange={setContent} />
-                <SpeechToText content={content} updateFunc={(newText) => setContent(content + '\n' + newText)} />
+                <SpeechToText content={content} updateFunc={setContent} />
               </div>
             </div>
           </div>
