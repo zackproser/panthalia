@@ -10,6 +10,9 @@ import LoginButton from '../../components/login-btn'
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
 import dynamic from "next/dynamic";
+
+import SpeechToText from '../../components/SpeechToText'
+
 import { useSpeechRecognition } from 'react-speech-kit';
 
 import {
@@ -34,7 +37,6 @@ function EditPost({ post }) {
   const [imagePrompts, setImagePrompts] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [modalConfig, setModalConfig] = useState({});
-  const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(post.title);
   const [summary, setSummary] = useState(post.summary);
   const [content, setContent] = useState(post.content);
@@ -45,7 +47,11 @@ function EditPost({ post }) {
   const [showImages, setShowImages] = useState(true);
   const { listen, listening, stop } = useSpeechRecognition({
     onResult: (result) => {
+      console.log(`onResult: ${result}`);
       setContent(content + result);
+    },
+    onEnd: (result) => {
+      console.log(`onEnd: ${result}`);
     },
   })
 
