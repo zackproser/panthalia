@@ -263,7 +263,7 @@ function EditPost({ post }) {
       )}
 
 
-      <form className="space-y-12">
+      <form className="pb-6 mb-12 space-y-12 w-full">
         <div className="border-b border-grey/10 pb-12">
           <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
             <div className="sm:col-span-4">
@@ -396,30 +396,9 @@ function EditPost({ post }) {
             </div>
           </div>
         </div>
-
-        {/* Temporarily disable this: }<div className="mt-6 flex items-center justify-end gap-x-6">
-          <button type="button" className="text-sm font-semibold leading-6 text-white">
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={editing}
-            className="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
-          >
-            {editing ? (
-              <>
-                <span>Updating...</span>
-                <Spinner />
-              </>
-            ) : (
-              'Save'
-            )}
-          </button>
-        </div>
-        */}
       </form>
 
-      <div className="mt-6 border-t border-white/10 pt-6">
+      <div className="mt-12 pt-6 border-t border-white/10 pt-6 w-full">
         <h2 className="text-base font-semibold leading-7 text-white">Other Controls</h2>
 
         <div className="mt-4 flex space-x-4">
