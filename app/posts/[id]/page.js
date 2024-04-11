@@ -216,33 +216,38 @@ function EditPost({ post }) {
     return `${daysSinceLastSaved} days ago`;
   };
 
-  useEffect(() => {
-    const autosaveInterval = setInterval(async () => {
-      const updatedPost = {
-        title,
-        summary,
-        content,
-        imagePrompts
-      };
+  // Custom hook for debouncing effects
+  function useDebouncedEffect(effect, dependencies, delay) {
+    useEffect(() => {
+      const handler = setTimeout(() => effect(), delay);
+      return () => clearTimeout(handler);
+    }, [...dependencies, delay]);
+  }
 
-      const response = await fetch(`/api/posts/${post.id}/content`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(updatedPost)
-      });
+  // Use the custom hook for autosaving
+  useDebouncedEffect(async () => {
+    const updatedPost = {
+      title,
+      summary,
+      content,
+      imagePrompts
+    };
 
-      if (response.ok) {
-        console.log('Post autosaved successfully!');
-        setLastSaved(Date.now());
-      } else {
-        console.error('Error autosaving post');
-      }
-    }, 5000); // Autosave every 5 seconds
+    const response = await fetch(`/api/posts/${post.id}/content`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updatedPost)
+    });
 
-    return () => clearInterval(autosaveInterval); // Clean up on component unmount
-  }, [title, summary, content, imagePrompts]);
+    if (response.ok) {
+      console.log('Post autosaved successfully!');
+      setLastSaved(Date.now());
+    } else {
+      console.error('Error autosaving post');
+    }
+  }, [title, summary, content, imagePrompts], 5000);
 
 
   return (
