@@ -203,6 +203,19 @@ function EditPost({ post }) {
     setImagePrompts([...imagePrompts])
   };
 
+  const [lastSaved, setLastSaved] = useState(Date.now());
+
+  const humanReadableTimeSinceLastSaved = () => {
+    const secondsSinceLastSaved = Math.floor((Date.now() - lastSaved) / 1000);
+    if (secondsSinceLastSaved < 60) return `${secondsSinceLastSaved} seconds ago`;
+    const minutesSinceLastSaved = Math.floor(secondsSinceLastSaved / 60);
+    if (minutesSinceLastSaved < 60) return `${minutesSinceLastSaved} minutes ago`;
+    const hoursSinceLastSaved = Math.floor(minutesSinceLastSaved / 60);
+    if (hoursSinceLastSaved < 24) return `${hoursSinceLastSaved} hours ago`;
+    const daysSinceLastSaved = Math.floor(hoursSinceLastSaved / 24);
+    return `${daysSinceLastSaved} days ago`;
+  };
+
   useEffect(() => {
     const autosaveInterval = setInterval(async () => {
       const updatedPost = {
@@ -222,6 +235,7 @@ function EditPost({ post }) {
 
       if (response.ok) {
         console.log('Post autosaved successfully!');
+        setLastSaved(Date.now());
       } else {
         console.error('Error autosaving post');
       }
@@ -229,6 +243,9 @@ function EditPost({ post }) {
 
     return () => clearInterval(autosaveInterval); // Clean up on component unmount
   }, [title, summary, content, imagePrompts]);
+
+  // Add this line where you want to display the last saved timestamp in the UI
+  // <p>Last saved {humanReadableTimeSinceLastSaved()}</p>
   return (
     <>
       {showModal && (
