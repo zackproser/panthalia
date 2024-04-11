@@ -203,36 +203,32 @@ function EditPost({ post }) {
     setImagePrompts([...imagePrompts])
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  useEffect(() => {
+    const autosaveInterval = setInterval(async () => {
+      const updatedPost = {
+        title,
+        summary,
+        content,
+        imagePrompts
+      };
 
-    setEditing(true);
+      const response = await fetch(`/api/posts/${post.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatedPost)
+      });
 
-    // Temporarily disable this 
-    /*
+      if (response.ok) {
+        console.log('Post autosaved successfully!');
+      } else {
+        console.error('Error autosaving post');
+      }
+    }, 5000); // Autosave every 5 seconds
 
-    const updatedPost = {
-      title,
-      summary,
-      content,
-      imagePrompts
-    };
-
-    const response = await fetch(`/api/posts/${post.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(updatedPost)
-    });
-
-    if (response.ok) {
-      console.log('Post updated successfully!');
-    } else {
-      console.error('Error updating post');
-    }
-    */
-  }
+    return () => clearInterval(autosaveInterval); // Clean up on component unmount
+  }, [title, summary, content, imagePrompts]);
   return (
     <>
       {showModal && (
