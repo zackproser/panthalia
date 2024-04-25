@@ -137,6 +137,7 @@ function NewPostForm() {
                       onChange={(e) => updateImagePrompt(index, e.target.value)}
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                     />
+                    <SpeechToText content={prompt.text} updateFunc={(newText) => updateImagePrompt(index, newText)} />
                     {index === imagePrompts.length - 1 && (
                       <button
                         type="button"

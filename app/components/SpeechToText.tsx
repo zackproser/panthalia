@@ -1,10 +1,10 @@
 import React from 'react';
 import { useSpeechRecognition } from 'react-speech-kit';
 
-function SpeechToText({ content, updateFunc }) {
+function SpeechToText({ inputRef, updateFunc }) {
   const { listen, listening, stop } = useSpeechRecognition({
     onResult: (result) => {
-      updateFunc(content + '\n' + result);
+      updateFunc(inputRef?.current?.value + '\n' + result);
     },
   });
 
